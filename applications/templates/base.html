@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ready Kids CMA – Application Management Portal{% endblock %}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --rk-primary: #0f5132;
+            --rk-primary-light: #198754;
+            --rk-primary-dark: #0a3622;
+            --rk-accent: #0d6efd;
+            --rk-accent-light: #6ea8fe;
+            --rk-bg: #f8f9fa;
+            --rk-text: #212529;
+            --rk-text-light: #6c757d;
+            --rk-border: #dee2e6;
+            --rk-white: #ffffff;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--rk-bg);
+            color: var(--rk-text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        /* Reusing styles from the original HTML but keeping it minimal for base */
+        .header {
+            background: var(--rk-white);
+            border-bottom: 1px solid var(--rk-border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--rk-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99z" /></svg>
+            Ready Kids CMA
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+            <span>Welcome, {{ user.username }}</span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="main-container">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    {% block scripts %}
+    {% endblock %}
+</body>
+
+</html>
