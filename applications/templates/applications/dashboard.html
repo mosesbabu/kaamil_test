@@ -686,8 +686,8 @@
                 'compliance': 'Compliance', 
                 'final_review': 'Final Review', 
                 'registered': 'Registered',
-                'SUBMITTED': 'Form Review', // Map Django status
-                'DRAFT': 'New'            // Map Django status
+                'SUBMITTED': 'Form Review', 
+                'DRAFT': 'New'            
             };
             return labels[stage] || stage;
         }
@@ -755,19 +755,19 @@
         // ==========================================
         const pipelineStages = [
             { id: 'new', label: 'New', headerClass: 'stage-new' },
-            { id: 'form submitted', label: 'Form Submitted', headerClass: 'stage-submitted' },
-            { id: 'in progress', label: 'Checks In Progress', headerClass: 'stage-checks' },
-            { id: 'under review', label: 'Under Review', headerClass: 'stage-review' },
+            { id: 'form_review', label: 'Form Submitted', headerClass: 'stage-submitted' },
+            { id: 'dbs_checks', label: 'Checks In Progress', headerClass: 'stage-checks' },
+            { id: 'final_review', label: 'Under Review', headerClass: 'stage-review' },
             { id: 'blocked', label: 'Blocked', headerClass: 'stage-blocked' },
-            { id: 'approved', label: 'Approved / Registered', headerClass: 'stage-approved' }
+            { id: 'registered', label: 'Approved / Registered', headerClass: 'stage-approved' }
         ];
 
         function getAppStage(app) {
-            if (app.status === 'SUBMITTED') return 'form submitted';
+            if (app.status === 'SUBMITTED') return 'form_review';
             if (app.status === 'BLOCKED') return 'blocked'; 
-            if (app.status === 'REGISTERED') return 'approved';
-            if (app.status === 'CHECKS_IN_PROGRESS') return 'in progress';
-            if (app.status === 'UNDER_REVIEW') return 'under review';
+            if (app.status === 'REGISTERED') return 'registered';
+            if (app.status === 'CHECKS_IN_PROGRESS') return 'dbs_checks'; // Mapping to dbs_checks or in_progress? Dropdown has dbs_checks and compliance. Let's use dbs_checks for now as a catch-all for checks.
+            if (app.status === 'UNDER_REVIEW') return 'final_review';
             return 'new';
         }
 
@@ -837,7 +837,7 @@
                 const registers = app.registers || ['0-5']; // Mock registers if missing
 
                 return `
-                <tr class="app-row" data-status="${app.status}" data-name="${name}" onclick="openDetailPanel('${app.id}')">
+                <tr class="app-row" data-status="${app.status}" data-stage="${stage}" data-name="${name}" onclick="openDetailPanel('${app.id}')">
                     <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">APP-${app.id}</span></td>
                     <td>
                         <div style="font-weight: 600;">${name}</div>
@@ -876,9 +876,12 @@
 
             rows.forEach(row => {
                 const name = (row.dataset.name || '').toLowerCase();
-                // We need to match stage logic, but for now simple status match
-                // Ideally filter by stage derived status
-                row.style.display = name.includes(searchTerm) ? '' : 'none';
+                const stage = row.dataset.stage;
+                
+                const matchesSearch = name.includes(searchTerm);
+                const matchesStatus = statusFilter === '' || stage === statusFilter;
+
+                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
             });
         }
 
