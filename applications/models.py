@@ -17,8 +17,26 @@ class Application(models.Model):
         return f"Application {self.id} ({self.get_status_display()})"
 
 class PersonalDetails(models.Model):
+    TITLE_CHOICES = [
+        ('Mr', 'Mr'),
+        ('Mrs', 'Mrs'),
+        ('Miss', 'Miss'),
+        ('Ms', 'Ms'),
+        ('Mx', 'Mx'),
+        ('Dr', 'Dr'),
+        ('Other', 'Other'),
+    ]
+    
+    RIGHT_TO_WORK_CHOICES = [
+        ('British Citizen', 'British Citizen'),
+        ('Irish Citizen', 'Irish Citizen'),
+        ('EU Settled Status', 'EU Settled Status'),
+        ('EU Pre-settled Status', 'EU Pre-settled Status'),
+        ('Visa / Work Permit', 'Visa / Work Permit'),
+    ]
+
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='personal_details')
-    title = models.CharField(max_length=10)
+    title = models.CharField(max_length=10, choices=TITLE_CHOICES)
     first_name = models.CharField(max_length=100)
     middle_names = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100)
@@ -34,7 +52,7 @@ class PersonalDetails(models.Model):
         verbose_name="National Insurance Number",
         validators=[RegexValidator(r'^[A-CEGHJ-PR-TW-Z]{1}[A-CEGHJ-NPR-TW-Z]{1}[0-9]{6}[A-D]{1}$', 'Invalid NI number format')]
     )
-    right_to_work_status = models.CharField(max_length=100)
+    right_to_work_status = models.CharField(max_length=100, choices=RIGHT_TO_WORK_CHOICES)
     lived_outside_uk = models.BooleanField(default=False)
     military_base_abroad = models.BooleanField(default=False)
 
@@ -134,14 +152,15 @@ class HouseholdMember(models.Model):
 
 class Reference(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='references')
-    full_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     relationship = models.CharField(max_length=100)
-    years_known = models.IntegerField()
+    years_known = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return self.full_name
+        return f"{self.first_name} {self.last_name}"
 
 class Suitability(models.Model):
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='suitability')

@@ -1,161 +1,961 @@
 {% extends 'base.html' %}
 
-{% block title %}Childminder Registration - Ready Kids{% endblock %}
+{% block title %}Apply to register as a childminder - ReadyKids{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Paste the specific styles from the original HTML here, 
-       or simpler: we'll stick to the original HTML structure mainly 
-       and just wrap forms. 
-       For this MVP, I will include the critical CSS from the provided file 
-       to ensure it looks right. 
-    */
-    /* ... (CSS from original file would go here, simplified for brevity) ... */
-    .form-container {
-        background: white;
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: var(--shadow-md);
-        max-width: 800px;
-        margin: 0 auto;
+    :root {
+        --rk-primary: #0C7C59;
+        --rk-primary-dark: #095C43;
+        --rk-primary-light: #E8F5F0;
+        --rk-primary-glow: rgba(12, 124, 89, 0.12);
+        --rk-accent: #1B9AAA;
+        --rk-accent-light: #E6F5F7;
+        --rk-success: #059669;
+        --rk-success-bg: #D1FAE5;
+        --rk-warning: #D97706;
+        --rk-warning-bg: #FEF3C7;
+        --rk-error: #DC2626;
+        --rk-error-bg: #FEE2E2;
+        --rk-info: #2563EB;
+        --rk-info-bg: #DBEAFE;
+        --rk-black: #0F172A;
+        --rk-gray-900: #1E293B;
+        --rk-gray-800: #334155;
+        --rk-gray-700: #475569;
+        --rk-gray-600: #64748B;
+        --rk-gray-500: #94A3B8;
+        --rk-gray-400: #CBD5E1;
+        --rk-gray-300: #E2E8F0;
+        --rk-gray-200: #F1F5F9;
+        --rk-gray-100: #F8FAFC;
+        --rk-white: #FFFFFF;
+        --rk-focus: #FACC15;
+        --font-display: 'Fraunces', Georgia, serif;
+        --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+        --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+        --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+        --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+        --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+        --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.12);
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .form-section {
-        margin-bottom: 2rem;
-        border-bottom: 1px solid var(--rk-border);
-        padding-bottom: 2rem;
+    /* Override base styles for this specific page if needed */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: var(--space-8);
+        padding: var(--space-4) 0;
+    }
+    @media (max-width: 1024px) {
+        .form-grid { grid-template-columns: 1fr; padding: var(--space-4); }
     }
 
-    .form-section:last-child {
-        border-bottom: none;
-    }
+    .sidebar { position: sticky; top: 100px; height: fit-content; }
+    @media (max-width: 1024px) { .sidebar { position: relative; top: 0; } }
+    .progress-card { background: var(--rk-white); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow-md); margin-bottom: var(--space-6); }
+    .progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-4); }
+    .progress-title { font-weight: 600; color: var(--rk-gray-800); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .progress-percent { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--rk-primary); }
+    .progress-bar-container { height: 8px; background: var(--rk-gray-200); border-radius: 4px; overflow: hidden; margin-bottom: var(--space-4); }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--rk-primary) 0%, var(--rk-accent) 100%); border-radius: 4px; width: 0%; transition: width 0.4s ease-out; }
+    .progress-steps { font-size: 0.875rem; color: var(--rk-gray-600); }
 
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--rk-primary);
-        margin-bottom: 1rem;
-    }
-
-    .field {
-        margin-bottom: 1rem;
-    }
-
-    .field-label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-
-    .input,
-    .textarea,
-    .select {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid var(--rk-border);
-        border-radius: 4px;
-    }
-
-    .btn-primary {
-        background: var(--rk-primary);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 4px;
+    .section-nav { background: var(--rk-white); border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: var(--shadow-md); }
+    .nav-item {
+        display: flex; align-items: center; gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-md);
         cursor: pointer;
-        font-weight: 600;
+        transition: all var(--transition-fast);
+        margin-bottom: var(--space-1);
+        border: 2px solid transparent;
+    }
+    .nav-item:hover { background: var(--rk-gray-100); }
+    .nav-item.active { background: var(--rk-primary-light); border-color: var(--rk-primary); }
+    .nav-number {
+        width: 28px; height: 28px; border-radius: 50%;
+        background: var(--rk-gray-300); color: var(--rk-white);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem; font-weight: 600; flex-shrink: 0;
+    }
+    .nav-item.active .nav-number { background: var(--rk-primary); box-shadow: 0 2px 8px rgba(12, 124, 89, 0.3); }
+    .nav-text { font-size: 0.875rem; font-weight: 500; color: var(--rk-gray-700); }
+    .nav-item.active .nav-text { color: var(--rk-primary-dark); font-weight: 600; }
+
+    .form-container { background: var(--rk-white); border-radius: 20px; box-shadow: var(--shadow-lg); overflow: hidden; }
+    .form-header {
+        background: linear-gradient(135deg, var(--rk-primary) 0%, var(--rk-primary-dark) 100%);
+        color: var(--rk-white);
+        padding: var(--space-8) var(--space-10);
+    }
+    .form-header h1 { font-family: var(--font-display); font-size: 2rem; font-weight: 700; margin-bottom: var(--space-2); }
+    .form-header p { opacity: 0.9; font-size: 1rem; }
+    .form-body { padding: var(--space-10); }
+
+    .form-section { display: none; animation: fadeIn 0.25s ease-out; }
+    .form-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .section-title { font-family: var(--font-display); font-size: 1.75rem; font-weight: 700; color: var(--rk-gray-900); margin-bottom: var(--space-2); }
+    .section-description { color: var(--rk-gray-600); font-size: 1rem; margin-bottom: var(--space-8); max-width: 600px; line-height: 1.7; }
+    .subsection { margin-bottom: var(--space-10); padding-bottom: var(--space-8); border-bottom: 1px solid var(--rk-gray-200); }
+    .subsection:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .subsection-title { font-size: 1.125rem; font-weight: 600; color: var(--rk-gray-800); margin-bottom: var(--space-5); display: flex; align-items: center; gap: var(--space-3); }
+
+    .info-box { padding: var(--space-5); border-radius: var(--radius-md); margin-bottom: var(--space-6); display: flex; gap: var(--space-4); }
+    .info-box.info { background: var(--rk-info-bg); border-left: 4px solid var(--rk-info); }
+    .info-box .icon { flex-shrink: 0; width: 24px; height: 24px; }
+    .info-box.info .icon { color: var(--rk-info); }
+    .info-box-content h4 { font-size: 0.9375rem; font-weight: 600; color: var(--rk-gray-800); margin-bottom: var(--space-1); }
+    .info-box-content p { font-size: 0.9375rem; color: var(--rk-gray-700); line-height: 1.6; }
+
+    .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-5); }
+    .field-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .field { margin-bottom: var(--space-5); }
+    .field.full-width { grid-column: 1 / -1; }
+    .field-label { display: block; font-size: 0.9375rem; font-weight: 600; color: var(--rk-gray-800); margin-bottom: var(--space-2); }
+    .required { color: var(--rk-error); margin-left: 2px; }
+    .field-hint { display: block; font-size: 0.875rem; color: var(--rk-gray-600); margin-bottom: var(--space-3); line-height: 1.5; }
+    
+    .input, .select, select, .textarea { width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid var(--rk-gray-300); border-radius: var(--radius-md); font-family: inherit; font-size: 1rem; transition: all var(--transition-fast); background-color: var(--rk-white); }
+    .input:focus, .select:focus, select:focus, .textarea:focus { outline: none; border-color: var(--rk-primary); box-shadow: 0 0 0 4px var(--rk-primary-glow); }
+    
+    .select, select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right var(--space-4) center;
+        background-size: 18px;
+        padding-right: var(--space-10);
+    }
+    .input-md { max-width: 250px; }
+    .input-sm { max-width: 150px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-4) var(--space-6); font-weight: 600; border-radius: var(--radius-md); cursor: pointer; border: none; transition: all var(--transition-fast); font-size: 1rem; }
+    .btn-primary { background: linear-gradient(135deg, var(--rk-primary) 0%, var(--rk-primary-dark) 100%); color: white; box-shadow: 0 4px 12px rgba(12, 124, 89, 0.25); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(12, 124, 89, 0.35); }
+    .btn-secondary { background: var(--rk-white); color: var(--rk-gray-700); border: 2px solid var(--rk-gray-300); }
+    .btn-lg { padding: 1rem 2rem; font-size: 1.125rem; }
+
+    .repeating-block { background: var(--rk-gray-100); padding: var(--space-6); border-radius: var(--radius-lg); margin-bottom: var(--space-6); border: 1px solid var(--rk-gray-200); position: relative; }
+    .repeating-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); padding-bottom: var(--space-4); border-bottom: 1px solid var(--rk-gray-300); }
+    .repeating-block-title { font-weight: 600; color: var(--rk-gray-800); }
+    
+    .add-btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-5); font-weight: 500; color: var(--rk-primary); background: var(--rk-white); border: 2px dashed var(--rk-primary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); margin-top: var(--space-2); margin-bottom: var(--space-6); }
+    .add-btn:hover { background: var(--rk-primary-light); border-style: solid; }
+    .remove-btn { color: var(--rk-error); font-weight: 500; font-size: 0.875rem; background: none; border: none; cursor: pointer; }
+
+    .form-navigation { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-10); padding-top: var(--space-8); border-top: 1px solid var(--rk-gray-200); }
+    .hidden { display: none !important; }
+
+    /* Radio & Checkbox */
+    .radio-group, .checkbox-group { display: flex; flex-direction: column; gap: var(--space-3); }
+    .radio-group.horizontal, .checkbox-group.horizontal { flex-direction: row; flex-wrap: wrap; gap: var(--space-4); }
+    .radio-item, .checkbox-item {
+        display: flex; align-items: flex-start; gap: var(--space-3);
+        padding: var(--space-4);
+        background: var(--rk-gray-100);
+        border: 2px solid transparent;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        position: relative;
+    }
+    .radio-item:hover, .checkbox-item:hover { background: var(--rk-gray-200); }
+    .radio-item.selected, .checkbox-item.selected { background: var(--rk-primary-light); border-color: var(--rk-primary); }
+    .radio-item.error, .checkbox-item.error { border-color: var(--rk-error); background: var(--rk-error-bg); }
+    .radio-item input, .checkbox-item input { position: absolute; opacity: 0; pointer-events: none; }
+    .radio-indicator, .checkbox-indicator {
+        width: 22px; height: 22px; min-width: 22px;
+        border: 2px solid var(--rk-gray-400);
+        display: flex; align-items: center; justify-content: center;
+        transition: all var(--transition-fast);
+        flex-shrink: 0;
+    }
+    .radio-indicator { border-radius: 50%; }
+    .checkbox-indicator { border-radius: var(--radius-sm); }
+    .radio-item.selected .radio-indicator, .checkbox-item.selected .checkbox-indicator { border-color: var(--rk-primary); background: var(--rk-primary); }
+    .radio-indicator::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--rk-white); opacity: 0; transform: scale(0); transition: all var(--transition-fast); }
+    .radio-item.selected .radio-indicator::after { opacity: 1; transform: scale(1); }
+    .checkbox-indicator svg { width: 14px; height: 14px; color: var(--rk-white); opacity: 0; transform: scale(0); transition: all var(--transition-fast); }
+    .checkbox-item.selected .checkbox-indicator svg { opacity: 1; transform: scale(1); }
+    .option-content { flex: 1; }
+    .option-label { font-weight: 500; color: var(--rk-gray-800); }
+    .option-description { font-size: 0.875rem; color: var(--rk-gray-600); margin-top: var(--space-1); }
+
+    /* Info Box Variants */
+    .info-box.warning { background: var(--rk-warning-bg); border-left: 4px solid var(--rk-warning); }
+    .info-box.success { background: var(--rk-success-bg); border-left: 4px solid var(--rk-success); }
+    .info-box.error { background: var(--rk-error-bg); border-left: 4px solid var(--rk-error); }
+    .info-box.warning .icon { color: var(--rk-warning); }
+    .info-box.success .icon { color: var(--rk-success); }
+    .info-box.error .icon { color: var(--rk-error); }
+
+    /* Capacity Calculator */
+    .capacity-calculator {
+        background: linear-gradient(135deg, var(--rk-primary-light) 0%, var(--rk-accent-light) 100%);
+        border: 2px solid var(--rk-primary);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        margin-top: var(--space-6);
+    }
+    .capacity-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+    .capacity-icon { width: 40px; height: 40px; background: var(--rk-primary); color: var(--rk-white); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+    .capacity-title { font-size: 1.125rem; font-weight: 600; color: var(--rk-gray-800); }
+    .capacity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--space-4); }
+    .capacity-card { background: var(--rk-white); border-radius: var(--radius-md); padding: var(--space-4); text-align: center; box-shadow: var(--shadow-sm); }
+    .capacity-number { font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: var(--rk-primary); line-height: 1; margin-bottom: var(--space-1); }
+    .capacity-label { font-size: 0.8125rem; color: var(--rk-gray-600); line-height: 1.3; }
+
+    /* Consent Items */
+    .consent-banner {
+        background: linear-gradient(135deg, var(--rk-accent) 0%, var(--rk-primary) 100%);
+        color: var(--rk-white);
+        padding: var(--space-6);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--space-8);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-5);
+    }
+    .consent-banner-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .consent-banner h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; margin-bottom: var(--space-2); }
+    .consent-banner p { opacity: 0.95; font-size: 0.9375rem; line-height: 1.6; }
+    .consent-item {
+        background: var(--rk-white);
+        border: 2px solid var(--rk-gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-5);
+        margin-bottom: var(--space-4);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        gap: var(--space-4);
+    }
+    .consent-item:hover { border-color: var(--rk-gray-300); }
+    .consent-item.checked { background: var(--rk-primary-light); border-color: var(--rk-primary); }
+    .consent-item.error { border-color: var(--rk-error); background: var(--rk-error-bg); }
+    .consent-item input { position: absolute; opacity: 0; }
+    .consent-checkbox {
+        width: 24px; height: 24px; min-width: 24px;
+        border: 2px solid var(--rk-gray-400);
+        border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center;
+        transition: all var(--transition-fast);
+        margin-top: 2px;
+    }
+    .consent-item.checked .consent-checkbox { background: var(--rk-primary); border-color: var(--rk-primary); }
+    .consent-checkbox svg { width: 14px; height: 14px; color: var(--rk-white); opacity: 0; transform: scale(0); transition: all var(--transition-fast); }
+    .consent-item.checked .consent-checkbox svg { opacity: 1; transform: scale(1); }
+    .consent-number { font-weight: 700; color: var(--rk-primary); margin-right: var(--space-2); }
+    .consent-text { color: var(--rk-gray-700); line-height: 1.6; flex: 1; font-size: 0.9375rem; }
+    .consent-text strong { color: var(--rk-gray-800); }
+    .consent-text ul { margin: var(--space-3) 0 0 var(--space-5); color: var(--rk-gray-600); }
+    .consent-text ul li { margin-bottom: var(--space-2); }
+
+    /* Signature Section */
+    .signature-section { background: linear-gradient(180deg, var(--rk-gray-50, #f9fafb) 0%, var(--rk-white) 100%); border: 2px solid var(--rk-gray-200); border-radius: var(--radius-lg); padding: var(--space-6); margin-top: var(--space-8); }
+    .signature-title { font-size: 1.125rem; font-weight: 600; color: var(--rk-gray-800); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-3); }
+    .signature-declaration { background: var(--rk-warning-bg); border: 1px solid var(--rk-warning); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-5); font-size: 0.9375rem; color: var(--rk-gray-700); font-style: italic; line-height: 1.6; }
+    .signature-grid { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: var(--space-5); }
+    @media (max-width: 768px) { .signature-grid { grid-template-columns: 1fr; } }
+    .signature-input { font-family: 'Brush Script MT', 'Segoe Script', cursive; font-size: 1.75rem; color: var(--rk-gray-900); }
+
+    /* Nav Completed State */
+    .nav-item.completed { background: var(--rk-success-bg); }
+    .nav-item.completed .nav-number { background: var(--rk-success); }
+
+    /* Training Sections */
+    .training-section { margin-bottom: var(--space-6); padding: var(--space-5); background: var(--rk-gray-100); border-radius: var(--radius-lg); border: 1px solid var(--rk-gray-200); }
+    .training-section.hidden { display: none; }
+    .training-details { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--rk-gray-200); }
+    .training-details.hidden { display: none; }
+
+    /* Textarea */
+    .textarea { min-height: 100px; resize: vertical; }
+
+    /* Error Summary */
+    .error-summary { background: var(--rk-error-bg); border: 2px solid var(--rk-error); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-8); display: none; }
+    .error-summary.active { display: block; animation: shake 0.4s ease-out; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
+    .error-summary-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+    .error-summary-header svg { width: 24px; height: 24px; color: var(--rk-error); }
+    .error-summary h3 { font-size: 1.125rem; font-weight: 600; color: var(--rk-error); }
+    .error-summary p { color: var(--rk-gray-700); }
+
+    /* Utilities */
+    .mt-4 { margin-top: var(--space-4); }
+    .mt-6 { margin-top: var(--space-6); }
+    .mb-4 { margin-bottom: var(--space-4); }
+    .space-y-4 > * + * { margin-top: var(--space-4); }
+    .space-y-6 > * + * { margin-top: var(--space-6); }
+
+    /* Mobile Nav */
+    @media (max-width: 1024px) {
+        .section-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: var(--space-2); padding: var(--space-3); -webkit-overflow-scrolling: touch; }
+        .nav-item { flex-shrink: 0; padding: var(--space-2) var(--space-3); margin-bottom: 0; }
+        .nav-text { display: none; }
+        .nav-number { width: 36px; height: 36px; font-size: 0.875rem; }
     }
 
-    .btn-primary:hover {
-        background: var(--rk-primary-dark);
-    }
-
-    .errorlist {
-        color: var(--rk-error);
-        list-style: none;
-        padding: 0;
-        margin-top: 0.25rem;
+    @media (max-width: 768px) {
+        .form-header { padding: var(--space-6); }
+        .form-header h1 { font-size: 1.5rem; }
+        .form-body { padding: var(--space-5); }
+        .field-grid, .field-grid-2, .field-grid-3 { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h1>Childminder Registration</h1>
-
-    <form method="post" novalidate>
-        {% csrf_token %}
-
-        <!-- Section 1: Personal Details -->
-        <div class="form-section">
-            <h2 class="section-title">Personal Details</h2>
-            {{ personal_form.as_p }}
+<div class="form-grid">
+    <aside class="sidebar">
+        <div class="progress-card">
+            <div class="progress-header"><span class="progress-title">Progress</span><span class="progress-percent" id="progressPercent">0%</span></div>
+            <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="progress-steps" id="progressSteps">Section 1 of 9</div>
         </div>
 
-        <!-- Section 2: Address History -->
-        <div class="form-section">
-            <h2 class="section-title">Address History</h2>
-            {{ address_formset.management_form }}
-            {% for form in address_formset %}
-            <div class="address-entry">
-                {{ form.as_p }}
-            </div>
-            {% endfor %}
+        <nav class="section-nav" id="sectionNav">
+            <div class="nav-item active" data-section="0"><div class="nav-number">1</div><span class="nav-text">Personal Details</span></div>
+            <div class="nav-item" data-section="1"><div class="nav-number">2</div><span class="nav-text">Address History</span></div>
+            <div class="nav-item" data-section="2"><div class="nav-number">3</div><span class="nav-text">Premises</span></div>
+            <div class="nav-item" data-section="3"><div class="nav-number">4</div><span class="nav-text">Your Service</span></div>
+            <div class="nav-item" data-section="4"><div class="nav-number">5</div><span class="nav-text">Training</span></div>
+            <div class="nav-item" data-section="5"><div class="nav-number">6</div><span class="nav-text">Employment</span></div>
+            <div class="nav-item" data-section="6"><div class="nav-number">7</div><span class="nav-text">Household</span></div>
+            <div class="nav-item" data-section="7"><div class="nav-number">8</div><span class="nav-text">Suitability</span></div>
+            <div class="nav-item" data-section="8"><div class="nav-number">9</div><span class="nav-text">Declaration</span></div>
+        </nav>
+    </aside>
+
+    <main class="form-container">
+        <div class="form-header">
+            <h1>Apply to register as a childminder</h1>
+            <p>ReadyKids Childminder Agency - Registration Application</p>
         </div>
 
-        <!-- Section 3: Premises -->
-        <div class="form-section">
-            <h2 class="section-title">Premises</h2>
-            {{ premises_form.as_p }}
-        </div>
+        <div class="form-body">
+            <form id="applicationForm" method="post" novalidate>
+                {% csrf_token %}
 
-        <!-- Section 4: Service -->
-        <div class="form-section">
-            <h2 class="section-title">Childcare Service</h2>
-            {{ service_form.as_p }}
-        </div>
+                <!-- SECTION 0: PERSONAL DETAILS -->
+                <section class="form-section active" id="section-0">
+                    <h2 class="section-title">Personal Details</h2>
+                    <p class="section-description">Basic information required for your application.</p>
+                    <div class="field-grid">
+                        <div class="field"><label class="field-label">Title <span class="required">*</span></label>{{ personal_form.title }}</div>
+                        <div class="field"><label class="field-label">First name(s) <span class="required">*</span></label>{{ personal_form.first_name }}</div>
+                        <div class="field"><label class="field-label">Middle name(s)</label>{{ personal_form.middle_names }}</div>
+                        <div class="field"><label class="field-label">Last name <span class="required">*</span></label>{{ personal_form.last_name }}</div>
+                    </div>
+                    <div class="field-grid field-grid-2">
+                        <div class="field"><label class="field-label">Date of birth <span class="required">*</span></label>{{ personal_form.dob }}</div>
+                        <div class="field">
+                            <label class="field-label">Gender <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="personal-gender" value="Male" {% if personal_form.gender.value == "Male" %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Male</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="personal-gender" value="Female" {% if personal_form.gender.value == "Female" %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Female</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label class="field-label">Have you ever been known by any other names? <span class="required">*</span></label>
+                        <span class="field-hint">Including maiden names, previous married names, or name changes</span>
+                        <div class="radio-group horizontal">
+                            <label class="radio-item">
+                                <input type="radio" name="personal-known_by_other_names" value="True" {% if personal_form.known_by_other_names.value == True %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="personal-known_by_other_names" value="False" {% if personal_form.known_by_other_names.value == False %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field full-width"><label class="field-label">Right to work status <span class="required">*</span></label>{{ personal_form.right_to_work_status }}</div>
+                    <div class="subsection">
+                        <h3 class="subsection-title">Contact Details</h3>
+                        <div class="field-grid field-grid-2">
+                            <div class="field"><label class="field-label">Email address <span class="required">*</span></label>{{ personal_form.email }}</div>
+                            <div class="field"><label class="field-label">Mobile number <span class="required">*</span></label>{{ personal_form.phone }}</div>
+                        </div>
+                    </div>
+                    <div class="field"><label class="field-label">National Insurance number <span class="required">*</span></label>{{ personal_form.ni_number }}</div>
+                    <div class="form-navigation"><div></div><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
 
-        <!-- Section 5: Training -->
-        <div class="form-section">
-            <h2 class="section-title">Training</h2>
-            {{ training_form.as_p }}
-        </div>
+                <!-- SECTION 1: ADDRESS HISTORY -->
+                <section class="form-section" id="section-1">
+                    <h2 class="section-title">Address History</h2>
+                    <p class="section-description">Your UK address history for the last 5 years.</p>
+                    {{ address_formset.management_form }}
+                    <div id="addressHistoryContainer">
+                        {% for form in address_formset %}
+                        <div class="repeating-block">
+                            <div class="repeating-block-header">
+                                <span class="repeating-block-title">{% if forloop.first %}Current Address{% else %}Previous Address{% endif %}</span>
+                                {% if not forloop.first %}<button type="button" class="remove-btn">Remove</button>{% endif %}
+                            </div>
+                            <div class="field-grid field-grid-2">
+                                <div class="field full-width"><label class="field-label">Address line 1 <span class="required">*</span></label>{{ form.line1 }}</div>
+                                <div class="field full-width"><label class="field-label">Address line 2</label>{{ form.line2 }}</div>
+                                <div class="field"><label class="field-label">Town or city <span class="required">*</span></label>{{ form.town }}</div>
+                                <div class="field"><label class="field-label">Postcode <span class="required">*</span></label>{{ form.postcode }}</div>
+                            </div>
+                            <div class="field-grid field-grid-2">
+                                <div class="field"><label class="field-label">Date moved in <span class="required">*</span></label>{{ form.move_in_date }}</div>
+                                <div class="field" style="display:flex; align-items:center; gap:10px; padding-top:20px;">
+                                    {{ form.is_current }} <span>Current address?</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="add-btn" id="addAddressHistory">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add another address
+                    </button>
+                    <div class="subsection">
+                        <h3 class="subsection-title">Overseas & Military History</h3>
+                        
+                        <div class="field">
+                            <label class="field-label">Have you lived outside the UK in the last 5 years? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="personal-lived_outside_uk" value="True" {% if personal_form.lived_outside_uk.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="personal-lived_outside_uk" value="False" {% if personal_form.lived_outside_uk.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
 
-        <!-- Section 6: Employment -->
-        <div class="form-section">
-            <h2 class="section-title">Employment History</h2>
-            {{ employment_formset.management_form }}
-            {% for form in employment_formset %}
-            <div class="employment-entry">
-                {{ form.as_p }}
-            </div>
-            {% endfor %}
-        </div>
+                        <div class="field">
+                            <label class="field-label">Have you lived or worked on a British military base abroad in the last 5 years? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="personal-military_base_abroad" value="True" {% if personal_form.military_base_abroad.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="personal-military_base_abroad" value="False" {% if personal_form.military_base_abroad.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
 
-        <!-- Section 7: Household -->
-        <div class="form-section">
-            <h2 class="section-title">Household Members</h2>
-            {{ household_formset.management_form }}
-            {% for form in household_formset %}
-            <div class="household-entry">
-                {{ form.as_p }}
-            </div>
-            {% endfor %}
-        </div>
+                <!-- SECTION 2: PREMISES -->
+                <section class="form-section" id="section-2">
+                    <h2 class="section-title">Childminding Premises</h2>
+                    <p class="section-description">Details about the premises where care will be provided.</p>
+                    <div class="subsection">
+                        <h3 class="subsection-title">Local Authority</h3>
+                        <div class="field"><label class="field-label">Local authority <span class="required">*</span></label>{{ premises_form.local_authority }}</div>
+                    </div>
+                    <div class="subsection">
+                        <h3 class="subsection-title">Premises Type</h3>
+                        <div class="field">
+                            <label class="field-label">Premises type <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-premises_type" value="Domestic" {% if premises_form.premises_type.value == "Domestic" %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Domestic (Home)</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-premises_type" value="Non-domestic" {% if premises_form.premises_type.value == "Non-domestic" %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Non-domestic</span>
+                                </label>
+                            </div>
+                        </div>
 
-        <!-- Section 8: Suitability -->
-        <div class="form-section">
-            <h2 class="section-title">Suitability</h2>
-            {{ suitability_form.as_p }}
-        </div>
+                        <div class="field">
+                            <label class="field-label">Is this your home? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-is_own_home" value="True" {% if premises_form.is_own_home.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-is_own_home" value="False" {% if premises_form.is_own_home.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subsection">
+                        <h3 class="subsection-title">Premises Details</h3>
+                        <div class="field">
+                            <label class="field-label">Outdoor space? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-has_outdoor_space" value="True" {% if premises_form.has_outdoor_space.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-has_outdoor_space" value="False" {% if premises_form.has_outdoor_space.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
 
-        <!-- Section 9: Declaration -->
-        <div class="form-section">
-            <h2 class="section-title">Declaration</h2>
-            {{ declaration_form.as_p }}
-        </div>
+                        <div class="field">
+                            <label class="field-label">Do you have pets? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-has_pets" value="True" {% if premises_form.has_pets.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="premises-has_pets" value="False" {% if premises_form.has_pets.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field {% if not premises_form.has_pets.value %}hidden{% endif %}" id="pets-details-field"><label class="field-label">Details of pets</label>{{ premises_form.pets_details }}</div>
+                    </div>
+                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
 
-        <button type="submit" class="btn-primary">Submit Application</button>
-    </form>
+                <!-- SECTION 3: YOUR SERVICE -->
+                <section class="form-section" id="section-3">
+                    <h2 class="section-title">Your Childminding Service</h2>
+                    <p class="section-description">Select which age groups you wish to care for. This determines your Ofsted register(s) and training requirements.</p>
+ 
+                    <div class="subsection">
+                        <h3 class="subsection-title">Age Groups</h3>
+ 
+                        <div class="info-box info">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <div class="info-box-content">
+                                <h4>Understanding the Registers</h4>
+                                <p><strong>Early Years Register (0-5):</strong> Most comprehensive requirements.<br>
+                                <strong>Compulsory Childcare Register (5-7):</strong> For children 5-8 years.<br>
+                                <strong>Voluntary Childcare Register (8+):</strong> For children 8 and over.</p>
+                            </div>
+                        </div>
+ 
+                        <div class="field"><label class="field-label">Which age groups will you care for? <span class="required">*</span></label>
+                            <span class="field-hint">Select all that apply</span>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" name="service-care_age_0_5" {% if service_form.care_age_0_5.value %}checked{% endif %}><span class="checkbox-indicator"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><div class="option-content"><span class="option-label">0–5 years (Early Years Register)</span></div></label>
+                                <label class="checkbox-item"><input type="checkbox" name="service-care_age_5_8" {% if service_form.care_age_5_8.value %}checked{% endif %}><span class="checkbox-indicator"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><div class="option-content"><span class="option-label">5–7 years (Compulsory Childcare Register)</span></div></label>
+                                <label class="checkbox-item"><input type="checkbox" name="service-care_age_8_plus" {% if service_form.care_age_8_plus.value %}checked{% endif %}><span class="checkbox-indicator"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><div class="option-content"><span class="option-label">8 years or older (Voluntary Childcare Register)</span></div></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3 class="subsection-title">Working Arrangements</h3>
+                        <div class="field">
+                            <label class="field-label">Will you work with any assistants or co-childminders? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="service-work_with_assistants" value="True" {% if service_form.work_with_assistants.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="service-work_with_assistants" value="False" {% if service_form.work_with_assistants.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field {% if not service_form.work_with_assistants.value %}hidden{% endif %}" id="assistants-count-field"><label class="field-label">Number of assistants</label>{{ service_form.number_of_assistants }}</div>
+                        
+                        <div class="capacity-calculator">
+                            <div class="capacity-header">
+                                <div class="capacity-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                                <span class="capacity-title">Your Maximum Child Capacity</span>
+                            </div>
+                            <div class="capacity-grid">
+                                <div class="capacity-card"><div class="capacity-number" id="totalAdultsText">1</div><div class="capacity-label">Total Adults</div></div>
+                                <div class="capacity-card"><div class="capacity-number" id="maxUnder5Text">3</div><div class="capacity-label">Max Under 5s</div></div>
+                                <div class="capacity-card"><div class="capacity-number" id="maxUnder1Text">1</div><div class="capacity-label">Max Under 1s</div></div>
+                                <div class="capacity-card"><div class="capacity-number" id="maxUnder8Text">6</div><div class="capacity-label">Max Under 8s</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
+
+                <!-- SECTION 4: TRAINING -->
+                <section class="form-section" id="section-4">
+                    <h2 class="section-title">Training & Qualifications</h2>
+                    <p class="section-description">Details of your required training and qualifications.</p>
+ 
+                    <div class="subsection">
+                        <h3 class="subsection-title">First Aid Training</h3>
+                        <div class="field"><label class="field-label">Training provider <span class="required">*</span></label>{{ training_form.first_aid_org }}</div>
+                        <div class="field"><label class="field-label">Date of training <span class="required">*</span></label>{{ training_form.first_aid_date }}</div>
+                    </div>
+ 
+                    <div class="subsection">
+                        <h3 class="subsection-title">Childminding Training (EYFS)</h3>
+                        <div class="field"><label class="field-label">Training provider <span class="required">*</span></label>{{ training_form.eyfs_org }}</div>
+                        <div class="field"><label class="field-label">Date completed <span class="required">*</span></label>{{ training_form.eyfs_date }}</div>
+                    </div>
+                    
+                    <div class="subsection">
+                        <h3 class="subsection-title">Safeguarding Training</h3>
+                        <div class="field"><label class="field-label">Training provider <span class="required">*</span></label>{{ training_form.safeguarding_org }}</div>
+                        <div class="field"><label class="field-label">Date completed <span class="required">*</span></label>{{ training_form.safeguarding_date }}</div>
+                    </div>
+                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
+
+                <!-- SECTION 5: EMPLOYMENT -->
+                <section class="form-section" id="section-5">
+                    <h2 class="section-title">Employment & References</h2>
+                    <p class="section-description">Details of your work history for the last 5 years.</p>
+                    {{ employment_formset.management_form }}
+                    <div id="employmentHistoryContainer">
+                        {% for form in employment_formset %}
+                        <div class="repeating-block">
+                            <div class="repeating-block-header"><span class="repeating-block-title">Employment Entry</span>{% if not forloop.first %}<button type="button" class="remove-btn">Remove</button>{% endif %}</div>
+                            <div class="field"><label class="field-label">Employer name <span class="required">*</span></label>{{ form.employer_name }}</div>
+                            <div class="field-grid field-grid-2">
+                                <div class="field"><label class="field-label">Job title <span class="required">*</span></label>{{ form.role }}</div>
+                                <div class="field" style="display:flex; align-items:center; gap:10px; padding-top:20px;">{{ form.is_current }} <span>Current job?</span></div>
+                            </div>
+                            <div class="field-grid field-grid-2">
+                                <div class="field"><label class="field-label">Start date <span class="required">*</span></label>{{ form.start_date }}</div>
+                                <div class="field"><label class="field-label">End date</label>{{ form.end_date }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="add-btn" id="addEmploymentHistory">Add another job</button>
+                    <div class="subsection">
+                        <h3 class="subsection-title">References</h3>
+                        {{ reference_formset.management_form }}
+                        <div id="referenceContainer">
+                            {% for form in reference_formset %}
+                            <div class="repeating-block">
+                                <div class="repeating-block-header"><span class="repeating-block-title">Reference</span></div>
+                                <div class="field-grid field-grid-2">
+                                    <div class="field"><label class="field-label">First name <span class="required">*</span></label>{{ form.first_name }}</div>
+                                    <div class="field"><label class="field-label">Last name <span class="required">*</span></label>{{ form.last_name }}</div>
+                                </div>
+                                <div class="field-grid field-grid-2">
+                                    <div class="field"><label class="field-label">Email address <span class="required">*</span></label>{{ form.email }}</div>
+                                    <div class="field"><label class="field-label">Phone number <span class="required">*</span></label>{{ form.phone }}</div>
+                                </div>
+                                <div class="field-grid field-grid-2">
+                                    <div class="field"><label class="field-label">Relationship <span class="required">*</span></label>{{ form.relationship }}</div>
+                                    <div class="field"><label class="field-label">Years known <span class="required">*</span></label>{{ form.years_known }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-btn" id="addReference">Add another reference</button>
+                    </div>
+                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
+
+                <!-- SECTION 6: HOUSEHOLD -->
+                <section class="form-section" id="section-6">
+                    <h2 class="section-title">Household Members</h2>
+                    <p class="section-description">Details of everyone living or working in the premises.</p>
+                    {{ household_formset.management_form }}
+                    <div id="householdContainer">
+                        {% for form in household_formset %}
+                        <div class="repeating-block">
+                            <div class="repeating-block-header"><span class="repeating-block-title">Household Member</span>{% if not forloop.first %}<button type="button" class="remove-btn">Remove</button>{% endif %}</div>
+                            <div class="field-grid field-grid-2">
+                                <div class="field"><label class="field-label">First name <span class="required">*</span></label>{{ form.first_name }}</div>
+                                <div class="field"><label class="field-label">Last name <span class="required">*</span></label>{{ form.last_name }}</div>
+                            </div>
+                            <div class="field-grid field-grid-2">
+                                <div class="field"><label class="field-label">Date of birth <span class="required">*</span></label>{{ form.dob }}</div>
+                                <div class="field"><label class="field-label">Relationship <span class="required">*</span></label>{{ form.relationship }}</div>
+                            </div>
+                            <div class="field">{{ form.is_adult }} <span>Lives or works here regularly?</span></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="add-btn" id="addHouseholdMember">Add another member</button>
+                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
+
+                <!-- SECTION 7: SUITABILITY -->
+                <section class="form-section" id="section-7">
+                    <h2 class="section-title">Suitability</h2>
+                    <p class="section-description">Medical and social services history.</p>
+ 
+                    <div class="field">
+                        <label class="field-label">Do you have any medical conditions? <span class="required">*</span></label>
+                        <div class="radio-group horizontal">
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-has_medical_condition" value="True" {% if suitability_form.has_medical_condition.value == True %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-has_medical_condition" value="False" {% if suitability_form.has_medical_condition.value == False %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field {% if not suitability_form.has_medical_condition.value %}hidden{% endif %}" id="medical-details-field"><label class="field-label">Details of medical conditions</label>{{ suitability_form.medical_condition_details }}</div>
+ 
+                    <div class="field">
+                        <label class="field-label">Involved with social services? <span class="required">*</span></label>
+                        <div class="radio-group horizontal">
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-social_services_involved" value="True" {% if suitability_form.social_services_involved.value == True %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-social_services_involved" value="False" {% if suitability_form.social_services_involved.value == False %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">No</span>
+                            </label>
+                        </div>
+                    </div>
+ 
+                    <div class="field">
+                        <label class="field-label">Are you disqualified under the Childcare Act 2006? <span class="required">*</span></label>
+                        <div class="radio-group horizontal">
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-is_disqualified" value="True" {% if suitability_form.is_disqualified.value == True %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-is_disqualified" value="False" {% if suitability_form.is_disqualified.value == False %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">No</span>
+                            </label>
+                        </div>
+                    </div>
+ 
+                    <div class="field">
+                        <label class="field-label">Do you have an Enhanced DBS? <span class="required">*</span></label>
+                        <div class="radio-group horizontal">
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-has_dbs" value="True" {% if suitability_form.has_dbs.value == True %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="suitability-has_dbs" value="False" {% if suitability_form.has_dbs.value == False %}checked{% endif %} required>
+                                <span class="radio-indicator"></span>
+                                <span class="option-label">No</span>
+                            </label>
+                        </div>
+                    </div>
+ 
+                    <div class="field">
+                        <label class="field-label">DBS Certificate Number <span class="required">*</span></label>
+                        {{ suitability_form.dbs_number }}
+                    </div>
+                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                </section>
+
+                <!-- SECTION 8: DECLARATION -->
+                <section class="form-section" id="section-8">
+                    <h2 class="section-title">Local Authority Consent & Declaration</h2>
+                    <p class="section-description">As part of safeguarding requirements, we must check with local authorities where you have lived in the past 5 years.</p>
+ 
+                    <div class="consent-banner">
+                        <div class="consent-banner-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                        <div>
+                            <h3>Why is this consent needed?</h3>
+                            <p>ReadyKids is an Ofsted-registered childminder agency. We must carry out background checks with local authorities where you have lived to assess your suitability to work with children.</p>
+                        </div>
+                    </div>
+ 
+                    <div class="subsection">
+                        <h3 class="subsection-title">Your Consent</h3>
+                        <p style="margin-bottom: var(--space-5); color: var(--rk-gray-700);">By checking each box below, you confirm that you:</p>
+                        
+                        <label class="consent-item"><input type="checkbox" name="declaration-consent_auth_contact" required><span class="consent-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span class="consent-text"><span class="consent-number">1.</span> <strong>Authorise ReadyKids</strong> to contact the children's services departments of any local authority area in which you have lived in the last 5 years.</span></label>
+                        <label class="consent-item"><input type="checkbox" name="declaration-consent_auth_share" required><span class="consent-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span class="consent-text"><span class="consent-number">2.</span> <strong>Authorise those local authorities</strong> to share with ReadyKids any relevant information about your suitability to work with children.</span></label>
+                        <label class="consent-item"><input type="checkbox" name="declaration-consent_understand_usage" required><span class="consent-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span class="consent-text"><span class="consent-number">3.</span> <strong>Understand</strong> that ReadyKids will use this information only for assessing your suitability and meeting safeguarding duties.</span></label>
+                        <label class="consent-item"><input type="checkbox" name="declaration-consent_understand_gdpr" required><span class="consent-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span class="consent-text"><span class="consent-number">4.</span> <strong>Understand</strong> that ReadyKids will handle all information in accordance with data protection law.</span></label>
+                        <label class="consent-item"><input type="checkbox" name="declaration-consent_truth" required><span class="consent-checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span class="consent-text"><span class="consent-number">5.</span> <strong>Confirm</strong> that all information in this application is true and complete to the best of your knowledge.</span></label>
+                    </div>
+ 
+                    <div class="signature-section">
+                        <h3 class="signature-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Declaration & Signature</h3>
+                        <div class="signature-declaration">I have read and understood the information above and I give my consent for ReadyKids and relevant local authority children's services departments to share information about me for the purposes described.</div>
+                        <div class="signature-grid">
+                            <div class="field"><label class="field-label">Your signature <span class="required">*</span></label><span class="field-hint">Type your full name as your electronic signature</span>{{ declaration_form.signature }}</div>
+                            <div class="field"><label class="field-label">Full name (PRINT) <span class="required">*</span></label>{{ declaration_form.print_name }}</div>
+                            <div class="field"><label class="field-label">Date <span class="required">*</span></label>{{ declaration_form.date_signed }}</div>
+                        </div>
+                    </div>
+ 
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                        <button type="submit" class="btn btn-primary btn-lg">Submit Application</button>
+                    </div>
+                </section>
+            </form>
+        </div>
+    </main>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function() {
+        let currentSection = 0;
+        const sections = document.querySelectorAll('.form-section');
+        const navItems = document.querySelectorAll('.nav-item');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressSteps = document.getElementById('progressSteps');
+
+        function updateProgress() {
+            const percent = Math.round((currentSection / (sections.length - 1)) * 100);
+            progressBar.style.width = percent + '%';
+            progressPercent.textContent = percent + '%';
+            progressSteps.textContent = `Section ${currentSection + 1} of ${sections.length}`;
+        }
+
+        function showSection(index) {
+            sections.forEach(s => s.classList.remove('active'));
+            navItems.forEach(n => n.classList.remove('active'));
+            sections[index].classList.add('active');
+            navItems[index].classList.add('active');
+            currentSection = index;
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', () => { if(currentSection < sections.length-1) showSection(currentSection+1); }));
+        document.querySelectorAll('.prev-btn').forEach(btn => btn.addEventListener('click', () => { if(currentSection > 0) showSection(currentSection-1); }));
+        navItems.forEach((item, index) => item.addEventListener('click', () => showSection(index)));
+
+        function setupFormSet(containerId, addBtnId, prefix) {
+            const container = document.getElementById(containerId);
+            const addBtn = document.getElementById(addBtnId);
+            const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+
+            function updateLabels() {
+                container.querySelectorAll('.repeating-block').forEach((block, idx) => {
+                    const title = block.querySelector('.repeating-block-title');
+                    if (title && !title.textContent.includes('Current')) {
+                        title.textContent = title.textContent.replace(/\d+$/, '') + (idx + 1);
+                    }
+                });
+            }
+
+            container.addEventListener('click', e => {
+                if (e.target.classList.contains('remove-btn')) {
+                    e.target.closest('.repeating-block').remove();
+                    totalForms.value = container.querySelectorAll('.repeating-block').length;
+                    updateLabels();
+                }
+            });
+
+            if (addBtn) addBtn.addEventListener('click', () => {
+                const formNum = parseInt(totalForms.value);
+                const lastForm = container.querySelector('.repeating-block:last-child');
+                const newForm = lastForm.cloneNode(true);
+                newForm.innerHTML = newForm.innerHTML.replace(new RegExp(`${prefix}-\\d+-`, 'g'), `${prefix}-${formNum}-`);
+                newForm.querySelectorAll('input, select, textarea').forEach(i => { if(i.type !== 'hidden') i.value = ''; });
+                if (!newForm.querySelector('.remove-btn')) {
+                    const header = newForm.querySelector('.repeating-block-header');
+                    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'remove-btn'; btn.textContent = 'Remove';
+                    header.appendChild(btn);
+                }
+                container.appendChild(newForm);
+                totalForms.value = formNum + 1;
+                updateLabels();
+            });
+        }
+
+        setupFormSet('addressHistoryContainer', 'addAddressHistory', 'address');
+        setupFormSet('employmentHistoryContainer', 'addEmploymentHistory', 'employment');
+        setupFormSet('householdContainer', 'addHouseholdMember', 'household');
+        setupFormSet('referenceContainer', 'addReference', 'reference');
+
+        // ═══════════════════════════════════════════════════════════════
+        // CONDITIONAL TOGGLES & CAPACITY
+        // ═══════════════════════════════════════════════════════════════
+        function setupToggle(triggerName, targetId, showValue = 'True') {
+            const update = () => {
+                const trigger = document.querySelector(`[name="${triggerName}"]`);
+                const target = document.getElementById(targetId);
+                if (trigger && target) {
+                    let value;
+                    if (trigger.type === 'checkbox') {
+                        value = trigger.checked ? 'True' : 'False';
+                    } else if (trigger.type === 'radio') {
+                        const checked = document.querySelector(`input[name="${triggerName}"]:checked`);
+                        value = checked ? checked.value : '';
+                    } else {
+                        value = trigger.value;
+                    }
+
+                    if (value === showValue) target.classList.remove('hidden');
+                    else target.classList.add('hidden');
+                }
+            };
+            
+            document.querySelectorAll(`[name="${triggerName}"]`).forEach(el => el.addEventListener('change', update));
+            update();
+        }
+
+        setupToggle('premises-has_pets', 'pets-details-field', 'True');
+        setupToggle('service-work_with_assistants', 'assistants-count-field', 'True');
+        setupToggle('suitability-has_medical_condition', 'medical-details-field', 'True');
+
+        // Simple Capacity Calculation
+        function updateCapacity() {
+            const assistantsInput = document.querySelector('[name="service-number_of_assistants"]');
+            const assistants = assistantsInput ? parseInt(assistantsInput.value || 0) : 0;
+            const adults = 1 + assistants;
+            
+            document.getElementById('totalAdultsText').textContent = adults;
+            document.getElementById('maxUnder5Text').textContent = adults * 3;
+            document.getElementById('maxUnder1Text').textContent = adults;
+            document.getElementById('maxUnder8Text').textContent = adults * 6;
+        }
+
+        document.querySelector('[name="service-number_of_assistants"]')?.addEventListener('input', updateCapacity);
+        document.querySelectorAll('[name="service-work_with_assistants"]').forEach(el => el.addEventListener('change', updateCapacity));
+        updateCapacity();
+
+        updateProgress();
+    })();
+</script>
 {% endblock %}

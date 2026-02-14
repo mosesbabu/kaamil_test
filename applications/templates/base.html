@@ -10,52 +10,132 @@
         rel="stylesheet">
     <style>
         :root {
-            --rk-primary: #0f5132;
-            --rk-primary-light: #198754;
-            --rk-primary-dark: #0a3622;
-            --rk-accent: #0d6efd;
-            --rk-accent-light: #6ea8fe;
-            --rk-bg: #f8f9fa;
-            --rk-text: #212529;
-            --rk-text-light: #6c757d;
-            --rk-border: #dee2e6;
-            --rk-white: #ffffff;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --rk-primary: #0C7C59;
+            --rk-primary-dark: #095C43;
+            --rk-primary-light: #E8F5F0;
+            --rk-primary-glow: rgba(12, 124, 89, 0.12);
+            --rk-accent: #1B9AAA;
+            --rk-accent-light: #E6F5F7;
+            --rk-success: #059669;
+            --rk-success-bg: #D1FAE5;
+            --rk-warning: #D97706;
+            --rk-warning-bg: #FEF3C7;
+            --rk-error: #DC2626;
+            --rk-error-bg: #FEE2E2;
+            --rk-info: #2563EB;
+            --rk-info-bg: #DBEAFE;
+            --rk-black: #0F172A;
+            --rk-gray-900: #1E293B;
+            --rk-gray-800: #334155;
+            --rk-gray-700: #475569;
+            --rk-gray-600: #64748B;
+            --rk-gray-500: #94A3B8;
+            --rk-gray-400: #CBD5E1;
+            --rk-gray-300: #E2E8F0;
+            --rk-gray-200: #F1F5F9;
+            --rk-gray-100: #F8FAFC;
+            --rk-white: #FFFFFF;
+            --rk-focus: #FACC15;
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+            --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+            --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.12);
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--rk-bg);
-            color: var(--rk-text);
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E8F5F0 100%);
+            color: var(--rk-black);
             margin: 0;
             padding: 0;
-            line-height: 1.5;
+            line-height: 1.6;
+            min-height: 100vh;
         }
 
-        /* Reusing styles from the original HTML but keeping it minimal for base */
+        /* Header */
         .header {
             background: var(--rk-white);
-            border-bottom: 1px solid var(--rk-border);
-            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--rk-gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-4) var(--space-6);
             display: flex;
-            align-items: center;
             justify-content: space-between;
-        }
-
-        .logo {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--rk-primary);
-            display: flex;
             align-items: center;
-            gap: 0.5rem;
         }
+        .logo { display: flex; align-items: center; gap: var(--space-3); }
+        .logo-mark {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--rk-primary) 0%, var(--rk-primary-dark) 100%);
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(12, 124, 89, 0.25);
+        }
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--rk-primary);
+            line-height: 1.2;
+        }
+        .logo-text span { color: var(--rk-gray-600); font-weight: 400; font-size: 0.875rem; display: block; }
+        .exit-btn {
+            padding: var(--space-2) var(--space-4);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--rk-gray-700);
+            background: var(--rk-white);
+            border: 1px solid var(--rk-gray-300);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .exit-btn:hover { background: var(--rk-gray-100); }
 
         .main-container {
             max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-6);
+        }
+
+        .messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: var(--rk-success-bg);
+            color: var(--rk-success);
+            border: 1px solid var(--rk-success);
+        }
+
+        .alert-error {
+            background: var(--rk-error-bg);
+            color: var(--rk-error);
+            border: 1px solid var(--rk-error);
+        }
+
+        .alert-info {
+            background: var(--rk-info-bg);
+            color: var(--rk-info);
+            border: 1px solid var(--rk-info);
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -63,15 +143,21 @@
 
 <body>
     <header class="header">
-        <div class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99z" /></svg>
-            Ready Kids CMA
-        </div>
-        <div>
-            {% if user.is_authenticated %}
-            <span>Welcome, {{ user.username }}</span>
-            {% endif %}
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-mark">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99z" />
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    ReadyKids
+                    <span>Childminder Registration</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="exit-btn">Save & Exit</button>
+            </div>
         </div>
     </header>
 
