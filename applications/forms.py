@@ -11,6 +11,16 @@ class ApplicationForm(forms.ModelForm):
         fields = ['status'] # Usually user doesn't set status, but handled in view
 
 class PersonalDetailsForm(forms.ModelForm):
+    ni_number = forms.CharField(
+        max_length=20, 
+        widget=forms.TextInput(attrs={
+            'class': 'input input-md', 
+            'placeholder': 'QQ 12 34 56 C', 
+            'style': 'text-transform: uppercase;'
+        }),
+        label="National Insurance Number"
+    )
+
     class Meta:
         model = PersonalDetails
         exclude = ['application']
@@ -24,9 +34,14 @@ class PersonalDetailsForm(forms.ModelForm):
             'known_by_other_names': forms.CheckboxInput(attrs={'class': 'checkbox-item', 'required': 'true'}),
             'email': forms.EmailInput(attrs={'class': 'input', 'placeholder': 'name@example.com', 'required': 'true'}),
             'phone': forms.TextInput(attrs={'class': 'input', 'placeholder': '07123 456789', 'required': 'true'}),
-            'ni_number': forms.TextInput(attrs={'class': 'input input-md', 'placeholder': 'QQ 12 34 56 C', 'style': 'text-transform: uppercase;'}),
             'right_to_work_status': forms.Select(attrs={'class': 'select', 'required': 'true'}),
         }
+
+    def clean_ni_number(self):
+        ni = self.cleaned_data.get('ni_number', '')
+        # Remove spaces and dashes, convert to upper
+        clean_ni = ni.replace(' ', '').replace('-', '').upper()
+        return clean_ni
 
 class PremisesForm(forms.ModelForm):
     class Meta:

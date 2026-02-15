@@ -137,6 +137,14 @@
             color: var(--rk-info);
             border: 1px solid var(--rk-info);
         }
+
+        /* Footer */
+        .footer { background: var(--rk-gray-900); color: var(--rk-gray-400); padding: var(--space-8) var(--space-6); margin-top: 4rem; }
+        .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); }
+        .footer-text { font-size: 0.875rem; }
+        .footer-links { display: flex; gap: var(--space-6); }
+        .footer-links a { color: var(--rk-gray-400); text-decoration: none; font-size: 0.875rem; }
+        .footer-links a:hover { color: var(--rk-white); }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -175,6 +183,18 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <p class="footer-text">© 2025 ReadyKids Childminder Agency. Ofsted URN 2012345.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Us</a>
+            </div>
+        </div>
+    </footer>
 
     {% block scripts %}
     {% endblock %}

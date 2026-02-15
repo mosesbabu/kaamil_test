@@ -50,7 +50,7 @@ class PersonalDetails(models.Model):
     ni_number = models.CharField(
         max_length=9, 
         verbose_name="National Insurance Number",
-        validators=[RegexValidator(r'^[A-CEGHJ-PR-TW-Z]{1}[A-CEGHJ-NPR-TW-Z]{1}[0-9]{6}[A-D]{1}$', 'Invalid NI number format')]
+        validators=[RegexValidator(r'^[A-Z]{2}[0-9]{6}[A-D]{1}$', 'Invalid NI number format')]
     )
     right_to_work_status = models.CharField(max_length=100, choices=RIGHT_TO_WORK_CHOICES)
     lived_outside_uk = models.BooleanField(default=False)

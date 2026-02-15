@@ -123,7 +123,9 @@
 
     .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-5); }
     .field-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 768px) { .field-grid, .field-grid-2 { grid-template-columns: 1fr; } }
     .field { margin-bottom: var(--space-5); }
+    .field-grid > .field { margin-bottom: 0; }
     .field.full-width { grid-column: 1 / -1; }
     .field-label { display: block; font-size: 0.9375rem; font-weight: 600; color: var(--rk-gray-800); margin-bottom: var(--space-2); }
     .required { color: var(--rk-error); margin-left: 2px; }
@@ -142,7 +144,9 @@
     }
     .input-md { max-width: 250px; }
     .input-sm { max-width: 150px; }
-    .input.error, .select.error, .textarea.error, select.error { border-color: var(--rk-error); background: var(--rk-error-bg); }
+    .input.error, .select.error, .textarea.error, select.error, .has-error .input, .has-error .select, .has-error select { border-color: var(--rk-error); background: var(--rk-error-bg); }
+    .field-error { color: var(--rk-error); font-size: 0.8125rem; margin-top: var(--space-1); font-weight: 500; display: block; animation: fadeInError 0.2s ease-out; }
+    @keyframes fadeInError { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-4) var(--space-6); font-weight: 600; border-radius: var(--radius-md); cursor: pointer; border: none; transition: all var(--transition-fast); font-size: 1rem; }
     .btn-primary { background: linear-gradient(135deg, var(--rk-primary) 0%, var(--rk-primary-dark) 100%); color: white; box-shadow: 0 4px 12px rgba(12, 124, 89, 0.25); }
@@ -277,23 +281,6 @@
     /* Nav Completed State */
     .nav-item.completed { background: var(--rk-success-bg); }
     .nav-item.completed .nav-number { background: var(--rk-success); }
-
-    /* Training Sections */
-    .training-section { margin-bottom: var(--space-6); padding: var(--space-5); background: var(--rk-gray-100); border-radius: var(--radius-lg); border: 1px solid var(--rk-gray-200); }
-    .training-section.hidden { display: none; }
-    .training-details { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--rk-gray-200); }
-    .training-details.hidden { display: none; }
-
-    /* Textarea */
-    .textarea { min-height: 100px; resize: vertical; }
-
-    /* Error Summary */
-    .error-summary { background: var(--rk-error-bg); border: 2px solid var(--rk-error); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-8); display: none; }
-    .error-summary.active { display: block; animation: shake 0.4s ease-out; }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
-    .error-summary-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
-    .error-summary-header svg { width: 24px; height: 24px; color: var(--rk-error); }
-    .error-summary h3 { font-size: 1.125rem; font-weight: 600; color: var(--rk-error); }
     .error-summary p { color: var(--rk-gray-700); }
 
     /* Utilities */
@@ -345,7 +332,7 @@
     <main class="form-container">
         <div class="form-header">
             <h1>Apply to register as a childminder</h1>
-            <p>ReadyKids Childminder Agency - Registration Application</p>
+            <p>Complete this application to register with ReadyKids Childminder Agency.</p>
         </div>
 
         <div class="form-body">
@@ -363,23 +350,27 @@
                 <!-- SECTION 0: PERSONAL DETAILS -->
                 <section class="form-section active" id="section-0">
                     <h2 class="section-title">Personal Details</h2>
-                    <p class="section-description">Basic information required for your application.</p>
+                    <p class="section-description">We need your personal information to verify your identity and process your registration.</p>
                     <div class="field-grid field-grid-2">
-                        <div class="field">
+                        <div class="field {% if personal_form.title.errors %}has-error{% endif %}">
                             <label class="field-label" for="id_personal-title">Title <span class="required">*</span></label>
                             {{ personal_form.title }}
+                            {% if personal_form.title.errors %}<span class="field-error">{{ personal_form.title.errors.0 }}</span>{% endif %}
                         </div>
-                        <div class="field">
+                        <div class="field {% if personal_form.first_name.errors %}has-error{% endif %}">
                             <label class="field-label" for="id_personal-first_name">First name(s) <span class="required">*</span></label>
                             {{ personal_form.first_name }}
+                            {% if personal_form.first_name.errors %}<span class="field-error">{{ personal_form.first_name.errors.0 }}</span>{% endif %}
                         </div>
-                        <div class="field">
+                        <div class="field {% if personal_form.middle_names.errors %}has-error{% endif %}">
                             <label class="field-label" for="id_personal-middle_names">Middle name(s)</label>
                             {{ personal_form.middle_names }}
+                            {% if personal_form.middle_names.errors %}<span class="field-error">{{ personal_form.middle_names.errors.0 }}</span>{% endif %}
                         </div>
-                        <div class="field">
+                        <div class="field {% if personal_form.last_name.errors %}has-error{% endif %}">
                             <label class="field-label" for="id_personal-last_name">Last name <span class="required">*</span></label>
                             {{ personal_form.last_name }}
+                            {% if personal_form.last_name.errors %}<span class="field-error">{{ personal_form.last_name.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
@@ -424,15 +415,17 @@
                         </button>
                     </div>
 
-                    <div class="field">
+                    <div class="field {% if personal_form.dob.errors %}has-error{% endif %}">
                         <label class="field-label" for="id_personal-dob">Date of birth <span class="required">*</span></label>
                         <span class="field-hint">You must be 18 or over to register as a childminder</span>
                         {{ personal_form.dob }}
+                        {% if personal_form.dob.errors %}<span class="field-error">{{ personal_form.dob.errors.0 }}</span>{% endif %}
                     </div>
 
-                    <div class="field">
+                    <div class="field {% if personal_form.right_to_work_status.errors %}has-error{% endif %}">
                         <label class="field-label">Do you have the right to work in the UK? <span class="required">*</span></label>
                         {{ personal_form.right_to_work_status }}
+                        {% if personal_form.right_to_work_status.errors %}<span class="field-error">{{ personal_form.right_to_work_status.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div id="rightToWorkInfo" class="info-box warning hidden">
@@ -446,11 +439,29 @@
                     <div class="subsection">
                         <h3 class="subsection-title">Contact Details</h3>
                         <div class="field-grid field-grid-2">
-                            <div class="field"><label class="field-label">Email address <span class="required">*</span></label>{{ personal_form.email }}</div>
-                            <div class="field"><label class="field-label">Mobile number <span class="required">*</span></label>{{ personal_form.phone }}</div>
+                            <div class="field {% if personal_form.email.errors %}has-error{% endif %}">
+                                <label class="field-label">Email address <span class="required">*</span></label>
+                                {{ personal_form.email }}
+                                {% if personal_form.email.errors %}<span class="field-error">{{ personal_form.email.errors.0 }}</span>{% endif %}
+                            </div>
+                            <div class="field {% if personal_form.phone.errors %}has-error{% endif %}">
+                                <label class="field-label">Mobile number <span class="required">*</span></label>
+                                {{ personal_form.phone }}
+                                {% if personal_form.phone.errors %}<span class="field-error">{{ personal_form.phone.errors.0 }}</span>{% endif %}
+                            </div>
                         </div>
                     </div>
-                    <div class="field"><label class="field-label">National Insurance number <span class="required">*</span></label>{{ personal_form.ni_number }}</div>
+
+                    <div class="field {% if personal_form.ni_number.errors %}has-error{% endif %}">
+                        <label class="field-label">National Insurance number <span class="required">*</span></label>
+                        <div class="field-hint">It's on your National Insurance card, benefit letter, payslip or P60. For example, 'QQ 12 34 56 C'</div>
+                        {{ personal_form.ni_number }}
+                        {% if personal_form.ni_number.errors %}
+                            {% for error in personal_form.ni_number.errors %}
+                                <span class="field-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
                     <div class="form-navigation"><div></div><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
                 </section>
 
@@ -472,25 +483,30 @@
                             
                             {{ form.id }}
                             <div class="field-grid field-grid-2">
-                                <div class="field full-width">
+                                <div class="field full-width {% if form.line1.errors %}has-error{% endif %}">
                                     <label class="field-label">Address line 1 <span class="required">*</span></label>
                                     {{ form.line1 }}
+                                    {% if form.line1.errors %}<span class="field-error">{{ form.line1.errors.0 }}</span>{% endif %}
                                 </div>
-                                <div class="field full-width">
+                                <div class="field full-width {% if form.line2.errors %}has-error{% endif %}">
                                     <label class="field-label">Address line 2</label>
                                     {{ form.line2 }}
+                                    {% if form.line2.errors %}<span class="field-error">{{ form.line2.errors.0 }}</span>{% endif %}
                                 </div>
-                                <div class="field">
+                                <div class="field {% if form.town.errors %}has-error{% endif %}">
                                     <label class="field-label">Town or city <span class="required">*</span></label>
                                     {{ form.town }}
+                                    {% if form.town.errors %}<span class="field-error">{{ form.town.errors.0 }}</span>{% endif %}
                                 </div>
-                                <div class="field">
+                                <div class="field {% if form.postcode.errors %}has-error{% endif %}">
                                     <label class="field-label">Postcode <span class="required">*</span></label>
                                     {{ form.postcode }}
+                                    {% if form.postcode.errors %}<span class="field-error">{{ form.postcode.errors.0 }}</span>{% endif %}
                                 </div>
-                                <div class="field">
+                                <div class="field {% if form.move_in_date.errors %}has-error{% endif %}">
                                     <label class="field-label">Date moved in <span class="required">*</span></label>
                                     {{ form.move_in_date }}
+                                    {% if form.move_in_date.errors %}<span class="field-error">{{ form.move_in_date.errors.0 }}</span>{% endif %}
                                 </div>
                             </div>
                         </div>
@@ -565,7 +581,7 @@
                 <!-- SECTION 2: PREMISES -->
                 <section class="form-section" id="section-2">
                     <h2 class="section-title">Childminding Premises</h2>
-                    <p class="section-description">Details about the premises where care will be provided.</p>
+                    <p class="section-description">Tell us about the location where you will be providing childcare.</p>
                     <div class="subsection">
                         <h3 class="subsection-title">Local Authority</h3>
                         <div class="field"><label class="field-label">Local authority <span class="required">*</span></label>{{ premises_form.local_authority }}</div>
@@ -708,7 +724,7 @@
                 <!-- SECTION 4: TRAINING -->
                 <section class="form-section" id="section-4">
                     <h2 class="section-title">Training & Qualifications</h2>
-                    <p class="section-description">Details of your required training and qualifications.</p>
+                    <p class="section-description">You must have completed the required training before registration. We will verify certificates during your pre-registration visit.</p>
  
                     <div class="subsection">
                         <h3 class="subsection-title">First Aid Training</h3>
@@ -733,7 +749,7 @@
                 <!-- SECTION 5: EMPLOYMENT -->
                 <section class="form-section" id="section-5">
                     <h2 class="section-title">Employment & References</h2>
-                    <p class="section-description">Details of your work history for the last 5 years.</p>
+                    <p class="section-description">Provide your employment history and two professional references.</p>
                     {{ employment_formset.management_form }}
                     <div id="employmentHistoryContainer">
                         {% for form in employment_formset %}
@@ -782,7 +798,7 @@
                 <!-- SECTION 6: HOUSEHOLD -->
                 <section class="form-section" id="section-6">
                     <h2 class="section-title">Household Members</h2>
-                    <p class="section-description">Details of everyone living or working in the premises.</p>
+                    <p class="section-description">We need details of everyone living at the childcare premises.</p>
                     {{ household_formset.management_form }}
                     <div id="householdContainer">
                         {% for form in household_formset %}
@@ -807,7 +823,7 @@
                 <!-- SECTION 7: SUITABILITY -->
                 <section class="form-section" id="section-7">
                     <h2 class="section-title">Suitability</h2>
-                    <p class="section-description">Medical and social services history.</p>
+                    <p class="section-description">Important declarations about your suitability to work with children.</p>
  
                     <div class="field">
                         <label class="field-label">Do you have any medical conditions? <span class="required">*</span></label>
@@ -1322,6 +1338,70 @@
         document.querySelector('[name="service-number_of_assistants"]')?.addEventListener('input', updateCapacity);
         document.querySelectorAll('[name="service-work_with_assistants"]').forEach(el => el.addEventListener('change', updateCapacity));
         updateCapacity();
+
+        // Show error summary if backend errors exist
+        if (document.querySelector('.field-error')) {
+            const summary = document.querySelector('.error-summary');
+            if (summary) {
+                summary.innerHTML = `
+                    <div class="error-summary-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <h3>There is a problem</h3>
+                    </div>
+                    <p>Please correct the errors in the form to continue.</p>
+                `;
+                summary.classList.add('active');
+            }
+        }
+
+        function updateAddressHistory() {
+            const dateInputs = document.querySelectorAll('input[name$="-move_in_date"]');
+            let earliestDate = null;
+            
+            dateInputs.forEach(input => {
+                if (input.value) {
+                    const d = new Date(input.value);
+                    if (!isNaN(d.getTime()) && (!earliestDate || d < earliestDate)) earliestDate = d;
+                }
+            });
+            
+            const textEl = document.getElementById('addressYearsText');
+            if (textEl) {
+                if (earliestDate) {
+                    const today = new Date();
+                    let years = today.getFullYear() - earliestDate.getFullYear();
+                    const m = today.getMonth() - earliestDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < earliestDate.getDate())) years--;
+                    textEl.textContent = `${years} years`;
+                    if (years < 5) textEl.style.color = 'var(--rk-error)';
+                    else textEl.style.color = 'var(--rk-success)';
+                } else {
+                    textEl.textContent = '0 years';
+                }
+            }
+        }
+        
+        const addressContainer = document.getElementById('addressHistoryContainer');
+        if (addressContainer) {
+            addressContainer.addEventListener('change', (e) => {
+                if (e.target.name && e.target.name.endsWith('-move_in_date')) {
+                    updateAddressHistory();
+                }
+            });
+        updateAddressHistory();
+        
+        // Auto-switch to first section with errors on page load
+        const firstErrorField = document.querySelector('.field-error, .errorlist, .error-summary.active');
+        if (firstErrorField) {
+            const section = firstErrorField.closest('.form-section');
+            if (section) {
+                const sectionId = section.id;
+                const sectionIndex = parseInt(sectionId.split('-')[1]);
+                if (!isNaN(sectionIndex)) {
+                    showSection(sectionIndex);
+                }
+            }
+        }
 
         updateProgress();
     })();

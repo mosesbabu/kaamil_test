@@ -36,6 +36,24 @@ class FormTests(TestCase):
         form = PersonalDetailsForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
 
+    def test_personal_details_form_qq_ni(self):
+        """Test PersonalDetailsForm with 'QQ' NI number which was previously failing."""
+        form_data = {
+            'title': 'Mr',
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'dob': '1990-01-01',
+            'gender': 'Male',
+            'email': 'john@example.com',
+            'phone': '07123456789',
+            'ni_number': 'QQ123456C',
+            'right_to_work_status': 'British Citizen',
+            'lived_outside_uk': False,
+            'military_base_abroad': False,
+        }
+        form = PersonalDetailsForm(data=form_data)
+        self.assertTrue(form.is_valid(), form.errors)
+
     def test_training_form_optional_flags(self):
         """Test that completion flags in TrainingForm are optional."""
         # Only providing date/org data, no boolean flags (which should default or be ignored if optional)
