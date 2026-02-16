@@ -10,6 +10,7 @@ class Application(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
+    last_section_completed = models.IntegerField(default=0) # To track progress
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -36,23 +37,24 @@ class PersonalDetails(models.Model):
     ]
 
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='personal_details')
-    title = models.CharField(max_length=10, choices=TITLE_CHOICES)
-    first_name = models.CharField(max_length=100)
+    title = models.CharField(max_length=10, choices=TITLE_CHOICES, null=True, blank=True)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
     middle_names = models.CharField(max_length=100, blank=True, null=True)
-    last_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
     
-    dob = models.DateField(verbose_name="Date of Birth")
-    gender = models.CharField(max_length=20)
+    dob = models.DateField(verbose_name="Date of Birth", null=True, blank=True)
+    gender = models.CharField(max_length=20, null=True, blank=True)
     known_by_other_names = models.BooleanField(default=False)
     
-    email = models.EmailField()
-    phone = models.CharField(max_length=20)
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
     ni_number = models.CharField(
         max_length=9, 
         verbose_name="National Insurance Number",
-        validators=[RegexValidator(r'^[A-Z]{2}[0-9]{6}[A-D]{1}$', 'Invalid NI number format')]
+        validators=[RegexValidator(r'^[A-Z]{2}[0-9]{6}[A-D]{1}$', 'Invalid NI number format')],
+        null=True, blank=True
     )
-    right_to_work_status = models.CharField(max_length=100, choices=RIGHT_TO_WORK_CHOICES)
+    right_to_work_status = models.CharField(max_length=100, choices=RIGHT_TO_WORK_CHOICES, null=True, blank=True)
     lived_outside_uk = models.BooleanField(default=False)
     military_base_abroad = models.BooleanField(default=False)
 
@@ -61,11 +63,11 @@ class PersonalDetails(models.Model):
 
 class AddressEntry(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='address_history')
-    line1 = models.CharField(max_length=255)
+    line1 = models.CharField(max_length=255, null=True, blank=True)
     line2 = models.CharField(max_length=255, blank=True, null=True)
-    town = models.CharField(max_length=100)
-    postcode = models.CharField(max_length=10)
-    move_in_date = models.DateField()
+    town = models.CharField(max_length=100, null=True, blank=True)
+    postcode = models.CharField(max_length=10, null=True, blank=True)
+    move_in_date = models.DateField(null=True, blank=True)
     is_current = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -82,8 +84,8 @@ class Premises(models.Model):
     ]
 
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='premises')
-    local_authority = models.CharField(max_length=100)
-    premises_type = models.CharField(max_length=20, choices=PREMISES_TYPES)
+    local_authority = models.CharField(max_length=100, null=True, blank=True)
+    premises_type = models.CharField(max_length=20, choices=PREMISES_TYPES, null=True, blank=True)
     is_own_home = models.BooleanField(default=True)
     
     # New fields for Section 3
@@ -130,9 +132,9 @@ class Training(models.Model):
 
 class EmploymentEntry(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='employment_history')
-    employer_name = models.CharField(max_length=255)
-    role = models.CharField(max_length=255)
-    start_date = models.DateField()
+    employer_name = models.CharField(max_length=255, null=True, blank=True)
+    role = models.CharField(max_length=255, null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(blank=True, null=True)
     is_current = models.BooleanField(default=False)
 
@@ -141,10 +143,10 @@ class EmploymentEntry(models.Model):
 
 class HouseholdMember(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='household_members')
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    dob = models.DateField()
-    relationship = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+    dob = models.DateField(null=True, blank=True)
+    relationship = models.CharField(max_length=100, null=True, blank=True)
     is_adult = models.BooleanField(default=True) # Calculated based on DOB usually, but good to flag
 
     def __str__(self):
@@ -152,11 +154,11 @@ class HouseholdMember(models.Model):
 
 class Reference(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='references')
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone = models.CharField(max_length=20)
-    relationship = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    relationship = models.CharField(max_length=100, null=True, blank=True)
     years_known = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
@@ -186,9 +188,9 @@ class Declaration(models.Model):
     consent_understand_gdpr = models.BooleanField(default=False)
     consent_truth = models.BooleanField(default=False)
     
-    signature = models.CharField(max_length=255)
-    print_name = models.CharField(max_length=255)
-    date_signed = models.DateField()
+    signature = models.CharField(max_length=255, null=True, blank=True)
+    print_name = models.CharField(max_length=255, null=True, blank=True)
+    date_signed = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"Declaration by {self.print_name}"

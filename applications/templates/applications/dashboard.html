@@ -620,6 +620,7 @@
                         <option value="compliance">Compliance</option>
                         <option value="final_review">Final Review</option>
                         <option value="registered">Registered</option>
+                        <option value="DRAFT">Drafts</option>
                     </select>
                 </div>
 
@@ -687,7 +688,7 @@
                 'final_review': 'Final Review', 
                 'registered': 'Registered',
                 'SUBMITTED': 'Form Review', 
-                'DRAFT': 'New'            
+                'DRAFT': 'Draft'            
             };
             return labels[stage] || stage;
         }
@@ -855,7 +856,10 @@
                     </td>
                     <td><span class="status-badge ${stageClass}">${stageLabel}</span></td>
                     <td>${stage === 'registered' ? '-' : days + 'd'}</td>
-                    <td><button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openDetailPanel('${app.id}')">View</button></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openDetailPanel('${app.id}')">View</button>
+                        ${app.status === 'DRAFT' ? `<a href="/register/?app_id=${app.id}" class="btn btn-sm btn-primary" onclick="event.stopPropagation();">Resume</a>` : ''}
+                    </td>
                 </tr>
                 `;
             }).join('');

@@ -111,7 +111,7 @@ class ViewTests(TestCase):
             'premises-is_own_home': 'on',
             
             # ChildcareServiceForm (prefix='service')
-            # (boolean fields can be omitted if false, assuming checkboxes)
+            'service-care_age_0_5': 'on',
             'service-number_of_assistants': '0',
             
             # TrainingForm (prefix='training')
@@ -121,6 +121,11 @@ class ViewTests(TestCase):
             # Empty valid for booleans default False
             
             # DeclarationForm (prefix='declaration')
+            'declaration-consent_auth_contact': 'on',
+            'declaration-consent_auth_share': 'on',
+            'declaration-consent_understand_usage': 'on',
+            'declaration-consent_understand_gdpr': 'on',
+            'declaration-consent_truth': 'on',
             'declaration-signature': 'Jane Smith',
             'declaration-print_name': 'Jane Do Smith',
             'declaration-date_signed': timezone.now().date(),
@@ -135,6 +140,7 @@ class ViewTests(TestCase):
             'address-0-town': 'Leeds',
             'address-0-postcode': 'LS1 1AA',
             'address-0-move_in_date': '2020-01-01',
+            'address-0-is_current': 'on',
             
             'employment-TOTAL_FORMS': '1',
             'employment-INITIAL_FORMS': '0',
@@ -175,13 +181,68 @@ class ViewTests(TestCase):
         }
         
         response = self.client.post(self.register_url, data)
-        
-        # Check for redirect (success)
-        if response.status_code != 302:
-            # If fail, print form errors from context if available
-            # print(response.context.get('personal_form').errors)
-            pass
-            
         self.assertRedirects(response, self.dashboard_url)
         self.assertEqual(Application.objects.count(), 1)
         self.assertEqual(Application.objects.first().status, 'SUBMITTED')
+
+class SaveAndExitTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.register_url = reverse('register')
+        self.dashboard_url = reverse('dashboard')
+
+    def test_save_and_exit_minimal_data(self):
+        """Test that Saving and Exiting works with minimal data."""
+        data = {
+            'action': 'save_and_exit',
+            'current_section': '0',
+            'personal-first_name': 'Draft',
+            'personal-last_name': 'User',
+            
+            # Management forms required for formsets even if empty
+            'address-TOTAL_FORMS': '0',
+            'address-INITIAL_FORMS': '0',
+            'address-MIN_NUM_FORMS': '0',
+            'address-MAX_NUM_FORMS': '1000',
+            'employment-TOTAL_FORMS': '0',
+            'employment-INITIAL_FORMS': '0',
+            'employment-MIN_NUM_FORMS': '0',
+            'employment-MAX_NUM_FORMS': '1000',
+            'household-TOTAL_FORMS': '0',
+            'household-INITIAL_FORMS': '0',
+            'household-MIN_NUM_FORMS': '0',
+            'household-MAX_NUM_FORMS': '1000',
+            'reference-TOTAL_FORMS': '0',
+            'reference-INITIAL_FORMS': '0',
+            'reference-MIN_NUM_FORMS': '0',
+            'reference-MAX_NUM_FORMS': '1000',
+        }
+        
+        response = self.client.post(self.register_url, data)
+        self.assertRedirects(response, self.dashboard_url)
+        
+        app = Application.objects.first()
+        self.assertIsNotNone(app)
+        self.assertEqual(app.status, 'DRAFT')
+        self.assertEqual(app.personal_details.first_name, 'Draft')
+
+    def test_resume_draft(self):
+        """Test that a draft can be resumed via GET parameter."""
+        app = Application.objects.create(status='DRAFT')
+        PersonalDetails.objects.create(application=app, first_name='Resumable')
+        
+        # Access register with app_id
+        response = self.client.get(f"{self.register_url}?app_id={app.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.session.get('application_id'), str(app.id))
+        self.assertContains(response, 'Resumable')
+
+    def test_dashboard_draft_count(self):
+        """Test that draft count is correct on dashboard."""
+        Application.objects.create(status='DRAFT')
+        Application.objects.create(status='DRAFT')
+        Application.objects.create(status='SUBMITTED')
+        
+        response = self.client.get(self.dashboard_url)
+        self.assertEqual(response.context['draft_apps'], 2)
+        self.assertEqual(response.context['submitted_apps'], 1)

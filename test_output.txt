@@ -1,0 +1,33 @@
+Creating test database for alias 'default'...
+......F
+======================================================================
+FAIL: test_register_view_post_success (applications.tests.ViewTests.test_register_view_post_success)
+Test a successful application submission.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/dev/Downloads/interview/cma_project/applications/tests.py", line 192, in test_register_view_post_success
+    self.assertRedirects(response, self.dashboard_url)
+AssertionError: 200 != 302 : Response didn't redirect as expected: Response code was 200 (expected 302)
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.228s
+
+FAILED (failures=1)
+Destroying test database for alias 'default'...
+Found 7 test(s).
+System check identified no issues (0 silenced).
+============================================================
+FORM VALIDATION ERRORS:
+  service: <ul class="errorlist"><li>__all__<ul class="errorlist nonfield"><li>Please select at least one age group.</li></ul></li></ul>
+  declaration: <ul class="errorlist"><li>consent_auth_contact<ul class="errorlist" id="id_declaration-consent_auth_contact_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_auth_share<ul class="errorlist" id="id_declaration-consent_auth_share_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_understand_usage<ul class="errorlist" id="id_declaration-consent_understand_usage_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_understand_gdpr<ul class="errorlist" id="id_declaration-consent_understand_gdpr_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_truth<ul class="errorlist" id="id_declaration-consent_truth_error"><li>You must provide your consent to continue.</li></ul></li></ul>
+============================================================
+Personal Errors: 
+Premises Errors: 
+Service Errors: <ul class="errorlist"><li>__all__<ul class="errorlist nonfield"><li>Please select at least one age group.</li></ul></li></ul>
+Training Errors: 
+Suitability Errors: 
+Declaration Errors: <ul class="errorlist"><li>consent_auth_contact<ul class="errorlist" id="id_declaration-consent_auth_contact_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_auth_share<ul class="errorlist" id="id_declaration-consent_auth_share_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_understand_usage<ul class="errorlist" id="id_declaration-consent_understand_usage_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_understand_gdpr<ul class="errorlist" id="id_declaration-consent_understand_gdpr_error"><li>You must provide your consent to continue.</li></ul></li><li>consent_truth<ul class="errorlist" id="id_declaration-consent_truth_error"><li>You must provide your consent to continue.</li></ul></li></ul>
+Address Errors: [{}]
+Employment Errors: [{}]
+Household Errors: [{}]
+Reference Errors: [{}, {}]

@@ -37,6 +37,13 @@ class PersonalDetailsForm(forms.ModelForm):
             'right_to_work_status': forms.Select(attrs={'class': 'select', 'required': 'true'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        self.is_draft = kwargs.pop('is_draft', False)
+        super().__init__(*args, **kwargs)
+        if self.is_draft:
+            for field in self.fields.values():
+                field.required = False
+
     def clean_ni_number(self):
         ni = self.cleaned_data.get('ni_number', '')
         # Remove spaces and dashes, convert to upper
@@ -53,13 +60,37 @@ class PremisesForm(forms.ModelForm):
             'pets_details': forms.Textarea(attrs={'rows': 3, 'class': 'textarea'}), # Optional
         }
 
+    def __init__(self, *args, **kwargs):
+        self.is_draft = kwargs.pop('is_draft', False)
+        super().__init__(*args, **kwargs)
+        if self.is_draft:
+            for field in self.fields.values():
+                field.required = False
+
 class ChildcareServiceForm(forms.ModelForm):
     class Meta:
         model = ChildcareService
         exclude = ['application']
         widgets = {
-            'number_of_assistants': forms.NumberInput(attrs={'class': 'input input-sm'}),
+            'number_of_assistants': forms.NumberInput(attrs={'class': 'input input-sm', 'min': '0'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.is_draft = kwargs.pop('is_draft', False)
+        super().__init__(*args, **kwargs)
+        if self.is_draft:
+            for field in self.fields.values():
+                field.required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.is_draft:
+            return cleaned_data
+            
+        age_groups = ['care_age_0_5', 'care_age_5_8', 'care_age_8_plus']
+        if not any(cleaned_data.get(field) for field in age_groups):
+            raise forms.ValidationError('Please select at least one age group.')
+        return cleaned_data
 
 class TrainingForm(forms.ModelForm):
     class Meta:
@@ -76,11 +107,15 @@ class TrainingForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.is_draft = kwargs.pop('is_draft', False)
         super().__init__(*args, **kwargs)
-        
-        for field in ['first_aid_completed', 'safeguarding_completed', 'eyfs_completed', 'food_hygiene_completed']:
-            if field in self.fields:
-                self.fields[field].required = False
+        if self.is_draft:
+            for field in self.fields.values():
+                field.required = False
+        else:
+            for field in ['first_aid_completed', 'safeguarding_completed', 'eyfs_completed', 'food_hygiene_completed']:
+                if field in self.fields:
+                    self.fields[field].required = False
 
 class SuitabilityForm(forms.ModelForm):
     class Meta:
@@ -92,6 +127,22 @@ class SuitabilityForm(forms.ModelForm):
             'dbs_number': forms.TextInput(attrs={'class': 'input input-md'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        self.is_draft = kwargs.pop('is_draft', False)
+        super().__init__(*args, **kwargs)
+        if self.is_draft:
+            for field in self.fields.values():
+                field.required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.is_draft:
+            return cleaned_data
+            
+        if cleaned_data.get('has_dbs') and not cleaned_data.get('dbs_number'):
+            self.add_error('dbs_number', 'Please provide your DBS certificate number.')
+        return cleaned_data
+
 class DeclarationForm(forms.ModelForm):
     class Meta:
         model = Declaration
@@ -101,6 +152,29 @@ class DeclarationForm(forms.ModelForm):
             'print_name': forms.TextInput(attrs={'class': 'input', 'required': 'true'}),
             'date_signed': forms.DateInput(attrs={'type': 'date', 'class': 'input input-md', 'id': 'declarationDate', 'required': 'true'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.is_draft = kwargs.pop('is_draft', False)
+        super().__init__(*args, **kwargs)
+        if self.is_draft:
+            for field in self.fields.values():
+                field.required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.is_draft:
+            return cleaned_data
+            
+        consent_fields = [
+            'consent_auth_contact', 'consent_auth_share', 
+            'consent_understand_usage', 'consent_understand_gdpr', 'consent_truth'
+        ]
+        
+        for field in consent_fields:
+            if not cleaned_data.get(field):
+                self.add_error(field, "You must provide your consent to continue.")
+        
+        return cleaned_data
 
 # Address History FormSet
 AddressEntryFormSet = forms.inlineformset_factory(
@@ -155,7 +229,7 @@ ReferenceFormSet = forms.inlineformset_factory(
         'email': forms.EmailInput(attrs={'class': 'input', 'required': 'true'}),
         'phone': forms.TextInput(attrs={'class': 'input', 'required': 'true'}),
         'relationship': forms.TextInput(attrs={'class': 'input', 'required': 'true'}),
-        'years_known': forms.NumberInput(attrs={'class': 'input input-sm', 'required': 'true'}),
+        'years_known': forms.NumberInput(attrs={'class': 'input input-sm', 'required': 'true', 'min': '0'}),
     },
     extra=2,
     can_delete=False 

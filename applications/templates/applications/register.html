@@ -181,7 +181,8 @@
     .radio-item:hover, .checkbox-item:hover { background: var(--rk-gray-200); }
     .radio-item.selected, .checkbox-item.selected { background: var(--rk-primary-light); border-color: var(--rk-primary); }
     .radio-item.error, .checkbox-item.error { border-color: var(--rk-error); background: var(--rk-error-bg); }
-    .radio-item input, .checkbox-item input { position: absolute; opacity: 0; pointer-events: none; }
+    .consent-item.error { border-color: var(--rk-error); background: var(--rk-error-bg); }
+    .radio-item input, .checkbox-item input, .consent-item input { position: absolute; opacity: 0; cursor: pointer; }
     .radio-indicator, .checkbox-indicator {
         width: 22px; height: 22px; min-width: 22px;
         border: 2px solid var(--rk-gray-400);
@@ -252,7 +253,6 @@
     .consent-item:hover { border-color: var(--rk-gray-300); }
     .consent-item.selected { background: var(--rk-primary-light); border-color: var(--rk-primary); }
     .consent-item.error { border-color: var(--rk-error); background: var(--rk-error-bg); }
-    .consent-item input { position: absolute; opacity: 0; }
     .consent-checkbox {
         width: 24px; height: 24px; min-width: 24px;
         border: 2px solid var(--rk-gray-400);
@@ -346,6 +346,8 @@
 
             <form id="applicationForm" method="post" novalidate>
                 {% csrf_token %}
+                <input type="hidden" name="action" id="formAction" value="submit">
+                <input type="hidden" name="current_section" id="currentSectionInput" value="0">
 
                 <!-- SECTION 0: PERSONAL DETAILS -->
                 <section class="form-section active" id="section-0">
@@ -462,7 +464,10 @@
                             {% endfor %}
                         {% endif %}
                     </div>
-                    <div class="form-navigation"><div></div><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 1: ADDRESS HISTORY -->
@@ -575,7 +580,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 2: PREMISES -->
@@ -655,7 +666,13 @@
                         </div>
                         <div class="field {% if not premises_form.has_pets.value %}hidden{% endif %}" id="pets-details-field"><label class="field-label">Details of pets</label>{{ premises_form.pets_details }}</div>
                     </div>
-                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 3: YOUR SERVICE -->
@@ -718,7 +735,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 4: TRAINING -->
@@ -743,7 +766,13 @@
                         <div class="field"><label class="field-label">Training provider <span class="required">*</span></label>{{ training_form.safeguarding_org }}</div>
                         <div class="field"><label class="field-label">Date completed <span class="required">*</span></label>{{ training_form.safeguarding_date }}</div>
                     </div>
-                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 5: EMPLOYMENT -->
@@ -792,7 +821,13 @@
                         </div>
                         <button type="button" class="add-btn" id="addReference">Add another reference</button>
                     </div>
-                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 6: HOUSEHOLD -->
@@ -817,7 +852,13 @@
                         {% endfor %}
                     </div>
                     <button type="button" class="add-btn" id="addHouseholdMember">Add another member</button>
-                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 7: SUITABILITY -->
@@ -894,7 +935,13 @@
                         <label class="field-label">DBS Certificate Number <span class="required">*</span></label>
                         {{ suitability_form.dbs_number }}
                     </div>
-                    <div class="form-navigation"><button type="button" class="btn btn-secondary prev-btn">Back</button><button type="button" class="btn btn-primary btn-lg next-btn">Continue</button></div>
+                    <div class="form-navigation">
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">Continue</button>
+                    </div>
                 </section>
 
                 <!-- SECTION 8: DECLARATION -->
@@ -932,7 +979,10 @@
                     </div>
  
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary prev-btn">Back</button>
+                            <button type="button" class="btn btn-secondary save-exit-btn">Save and Exit</button>
+                        </div>
                         <button type="submit" class="btn btn-primary btn-lg">Submit Application</button>
                     </div>
                 </section>
@@ -1020,6 +1070,27 @@
                 }
             }
 
+            // Section 3 (Your Service): require at least one age group
+            if (index === 3) {
+                const ageCheckboxes = section.querySelectorAll('input[name^="service-care_age"]');
+                const anyChecked = Array.from(ageCheckboxes).some(cb => cb.checked);
+                if (!anyChecked) {
+                    ageCheckboxes.forEach(cb => cb.closest('.checkbox-item')?.classList.add('error'));
+                    return { isValid: false, message: 'Please select at least one age group you will care for.' };
+                }
+            }
+
+            // Section 5 (Employment & References): validate years_known is non-negative
+            if (index === 5) {
+                const yearsInputs = section.querySelectorAll('input[name$="-years_known"]');
+                for (const input of yearsInputs) {
+                    if (input.value !== '' && parseInt(input.value) < 0) {
+                        input.classList.add('error');
+                        return { isValid: false, message: 'Years known cannot be negative.' };
+                    }
+                }
+            }
+
             // Check required fields
             const requiredFields = section.querySelectorAll('[required]');
             
@@ -1083,6 +1154,37 @@
             });
         });
 
+        // Save and Exit button logic
+        document.querySelectorAll('.save-exit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const actionInput = document.getElementById('formAction');
+                const sectionInput = document.getElementById('currentSectionInput');
+                if (actionInput) actionInput.value = 'save_and_exit';
+                if (sectionInput) sectionInput.value = currentSection;
+                
+                // Submit form without validation
+                if (applicationForm) applicationForm.submit();
+            });
+        });
+
+        // Form Submit Validation
+        const applicationForm = document.getElementById('applicationForm');
+        if (applicationForm) {
+            applicationForm.addEventListener('submit', (e) => {
+                const validation = validateSection(currentSection);
+                if (!validation.isValid) {
+                    e.preventDefault();
+                    if (errorMessage) errorMessage.textContent = validation.message;
+                    if (errorSummary) {
+                        errorSummary.classList.add('active');
+                        errorSummary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        alert(validation.message);
+                    }
+                }
+            });
+        }
+
         // Radio & Checkbox Interactions (Visual State)
         document.querySelectorAll('.radio-item, .checkbox-item, .consent-item').forEach(item => {
             const input = item.querySelector('input');
@@ -1093,22 +1195,22 @@
 
             // Click Handler
             item.addEventListener('click', (e) => {
-                if (e.target === input) return; // Allow native click to propagate
+                // If the user clicked the actual input, let the browser handle it.
+                // The 'change' event listener below will catch it.
+                if (e.target === input) return;
+                
+                // If they clicked the label/container, we manually toggle
+                // and then prevent default to avoid double-toggle (label-click native behavior).
+                e.preventDefault();
                 
                 if (input.type === 'radio') {
-                    // Deselect others in group
-                    document.querySelectorAll(`input[name="${input.name}"]`).forEach(r => {
-                        const parent = r.closest('.radio-item');
-                        if (parent) parent.classList.remove('selected');
-                    });
-                    input.checked = true;
-                    item.classList.add('selected');
-                    // Trigger change event manually for listeners
-                     input.dispatchEvent(new Event('change', { bubbles: true }));
+                    if (!input.checked) {
+                        input.checked = true;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
                 } else {
-                    // Checkbox: Native click on label toggles input automatically.
-                    // We DO NOT manually toggle input.checked here because it causes a double-toggle.
-                    // The 'change' listener below will handle the visual state update.
+                    input.checked = !input.checked;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             });
 
@@ -1126,8 +1228,37 @@
         });
 
 
+        // Address History Year Calculator
+        function updateAddressHistory() {
+            const dateInputs = document.querySelectorAll('input[name$="-move_in_date"]');
+            let earliestDate = null;
+            
+            dateInputs.forEach(input => {
+                if (input.value) {
+                    const d = new Date(input.value);
+                    if (!isNaN(d.getTime()) && (!earliestDate || d < earliestDate)) earliestDate = d;
+                }
+            });
+            
+            const textEl = document.getElementById('addressYearsText');
+            if (textEl) {
+                if (earliestDate) {
+                    const today = new Date();
+                    let years = today.getFullYear() - earliestDate.getFullYear();
+                    const m = today.getMonth() - earliestDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < earliestDate.getDate())) years--;
+                    years = Math.max(0, years);
+                    textEl.textContent = `${years} years`;
+                    if (years < 5) textEl.style.color = 'var(--rk-error)';
+                    else textEl.style.color = 'var(--rk-success)';
+                } else {
+                    textEl.textContent = '0 years';
+                }
+            }
+        }
+
         // Existing FormSet & Toggle Logic preserved
-        function setupFormSet(containerId, addBtnId, prefix) {
+        function setupFormSet(containerId, addBtnId, prefix, onChangeCallback) {
             const container = document.getElementById(containerId);
             const addBtn = document.getElementById(addBtnId);
             const totalForms = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
@@ -1146,6 +1277,7 @@
                     e.target.closest('.repeating-block').remove();
                     totalForms.value = container.querySelectorAll('.repeating-block').length;
                     updateLabels();
+                    if (onChangeCallback) onChangeCallback();
                 }
             });
 
@@ -1164,10 +1296,11 @@
                 container.appendChild(newForm);
                 totalForms.value = formNum + 1;
                 updateLabels();
+                if (onChangeCallback) onChangeCallback();
             });
         }
 
-        setupFormSet('addressHistoryContainer', 'addAddressHistory', 'address');
+        setupFormSet('addressHistoryContainer', 'addAddressHistory', 'address', updateAddressHistory);
         setupFormSet('employmentHistoryContainer', 'addEmploymentHistory', 'employment');
         setupFormSet('householdContainer', 'addHouseholdMember', 'household');
         setupFormSet('referenceContainer', 'addReference', 'reference');
@@ -1354,40 +1487,16 @@
             }
         }
 
-        function updateAddressHistory() {
-            const dateInputs = document.querySelectorAll('input[name$="-move_in_date"]');
-            let earliestDate = null;
-            
-            dateInputs.forEach(input => {
-                if (input.value) {
-                    const d = new Date(input.value);
-                    if (!isNaN(d.getTime()) && (!earliestDate || d < earliestDate)) earliestDate = d;
-                }
-            });
-            
-            const textEl = document.getElementById('addressYearsText');
-            if (textEl) {
-                if (earliestDate) {
-                    const today = new Date();
-                    let years = today.getFullYear() - earliestDate.getFullYear();
-                    const m = today.getMonth() - earliestDate.getMonth();
-                    if (m < 0 || (m === 0 && today.getDate() < earliestDate.getDate())) years--;
-                    textEl.textContent = `${years} years`;
-                    if (years < 5) textEl.style.color = 'var(--rk-error)';
-                    else textEl.style.color = 'var(--rk-success)';
-                } else {
-                    textEl.textContent = '0 years';
-                }
-            }
-        }
-        
-        const addressContainer = document.getElementById('addressHistoryContainer');
-        if (addressContainer) {
-            addressContainer.addEventListener('change', (e) => {
+
+        // Listen on the entire address section for dynamically-added date inputs
+        const addressSection = document.getElementById('section-1');
+        if (addressSection) {
+            addressSection.addEventListener('change', (e) => {
                 if (e.target.name && e.target.name.endsWith('-move_in_date')) {
                     updateAddressHistory();
                 }
             });
+        }
         updateAddressHistory();
         
         // Auto-switch to first section with errors on page load

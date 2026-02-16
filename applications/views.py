@@ -14,25 +14,78 @@ def register_view(request):
     Handles the multi-step registration form.
     Since the frontend is a single page with JS sections, we handle the final POST submission here.
     """
+    # Try to get application from GET param or session
+    app_id = request.GET.get('app_id') or request.session.get('application_id')
+    application = None
+    if app_id:
+        application = Application.objects.filter(id=app_id).first()
+        if application:
+            request.session['application_id'] = str(application.id)
+
     if request.method == 'POST':
-        # Main application form
-        # We might need to handle specific logic if we want to save partial progress, 
-        # but for this MVP we'll assume a full submission or create a draft.
+        action = request.POST.get('action', 'submit')
+        is_draft = (action == 'save_and_exit')
         
         # Initialize all forms
-        personal_form = PersonalDetailsForm(request.POST, prefix='personal')
-        premises_form = PremisesForm(request.POST, prefix='premises')
-        service_form = ChildcareServiceForm(request.POST, prefix='service')
-        training_form = TrainingForm(request.POST, prefix='training')
-        suitability_form = SuitabilityForm(request.POST, prefix='suitability')
-        declaration_form = DeclarationForm(request.POST, prefix='declaration')
+        personal_form = PersonalDetailsForm(request.POST, prefix='personal', instance=application.personal_details if application and hasattr(application, 'personal_details') else None, is_draft=is_draft)
+        premises_form = PremisesForm(request.POST, prefix='premises', instance=application.premises if application and hasattr(application, 'premises') else None, is_draft=is_draft)
+        service_form = ChildcareServiceForm(request.POST, prefix='service', instance=application.service_details if application and hasattr(application, 'service_details') else None, is_draft=is_draft)
+        training_form = TrainingForm(request.POST, prefix='training', instance=application.training if application and hasattr(application, 'training') else None, is_draft=is_draft)
+        suitability_form = SuitabilityForm(request.POST, prefix='suitability', instance=application.suitability if application and hasattr(application, 'suitability') else None, is_draft=is_draft)
+        declaration_form = DeclarationForm(request.POST, prefix='declaration', instance=application.declaration if application and hasattr(application, 'declaration') else None, is_draft=is_draft)
         
         # FormSets
-        address_formset = AddressEntryFormSet(request.POST, prefix='address')
-        employment_formset = EmploymentEntryFormSet(request.POST, prefix='employment')
-        household_formset = HouseholdMemberFormSet(request.POST, prefix='household')
-        reference_formset = ReferenceFormSet(request.POST, prefix='reference')
+        address_formset = AddressEntryFormSet(request.POST, prefix='address', instance=application)
+        employment_formset = EmploymentEntryFormSet(request.POST, prefix='employment', instance=application)
+        household_formset = HouseholdMemberFormSet(request.POST, prefix='household', instance=application)
+        reference_formset = ReferenceFormSet(request.POST, prefix='reference', instance=application)
 
+        if action == 'save_and_exit':
+            # Partial save - don't enforce full validation
+            if not application:
+                application = Application.objects.create(status='DRAFT')
+                request.session['application_id'] = str(application.id)
+                # Update formset instances
+                address_formset.instance = application
+                employment_formset.instance = application
+                household_formset.instance = application
+                reference_formset.instance = application
+            
+            # Save whatever we have
+            def save_partial(form, app):
+                if form.is_valid():
+                    obj = form.save(commit=False)
+                    obj.application = app
+                    obj.save()
+                else:
+                    # Even if invalid, we might want to save what's there?
+                    # Django ModelForms don't easily save invalid data.
+                    # But since we made fields null=True in models, 
+                    # we should update forms.py to make them not required if it's a draft.
+                    # For now, we'll try to save if it passes whatever relaxed validation we have.
+                    pass
+
+            # Save main forms
+            for f in [personal_form, premises_form, service_form, training_form, suitability_form, declaration_form]:
+                save_partial(f, application)
+            
+            # Save formsets
+            for fs in [address_formset, employment_formset, household_formset, reference_formset]:
+                if fs.is_valid():
+                    fs.save()
+            
+            # Update last_section_completed if possible
+            try:
+                current_section = int(request.POST.get('current_section', 0))
+                application.last_section_completed = max(application.last_section_completed, current_section)
+                application.save()
+            except:
+                pass
+
+            messages.success(request, 'Progress saved successfully. You can complete your application later.')
+            return redirect('dashboard')
+
+        # Full submit logic
         # Check validity of ALL forms and formsets
         forms_valid = (personal_form.is_valid() and premises_form.is_valid() and 
             service_form.is_valid() and training_form.is_valid() and 
@@ -42,11 +95,18 @@ def register_view(request):
             household_formset.is_valid() and reference_formset.is_valid())
         
         if forms_valid and formsets_valid:
+            if not application:
+                application = Application.objects.create(status='SUBMITTED')
+                # Update formset instances if the application was just created
+                address_formset.instance = application
+                employment_formset.instance = application
+                household_formset.instance = application
+                reference_formset.instance = application
+            else:
+                application.status = 'SUBMITTED'
+                application.save()
             
-          
-            application = Application.objects.create(status='SUBMITTED')
-            
-           
+            # Save everything
             personal = personal_form.save(commit=False)
             personal.application = application
             personal.save()
@@ -71,30 +131,14 @@ def register_view(request):
             declaration.application = application
             declaration.save()
             
-            # Save FormSets - set instance before saving
-            for form in address_formset.forms:
-                if form.has_changed():
-                    obj = form.save(commit=False)
-                    obj.application = application
-                    obj.save()
+            address_formset.save()
+            employment_formset.save()
+            household_formset.save()
+            reference_formset.save()
             
-            for form in employment_formset.forms:
-                if form.has_changed():
-                    obj = form.save(commit=False)
-                    obj.application = application
-                    obj.save()
-            
-            for form in household_formset.forms:
-                if form.has_changed():
-                    obj = form.save(commit=False)
-                    obj.application = application
-                    obj.save()
-            
-            for form in reference_formset.forms:
-                if form.has_changed():
-                    obj = form.save(commit=False)
-                    obj.application = application
-                    obj.save()
+            # Clear session
+            if 'application_id' in request.session:
+                del request.session['application_id']
             
             messages.success(request, 'Application submitted successfully!')
             return redirect('dashboard') # Redirect to dashboard or success page
@@ -124,20 +168,21 @@ def register_view(request):
             messages.error(request, 'Please correct the errors in the form.')
     
     else:
-        # Initialize empty forms
-        personal_form = PersonalDetailsForm(prefix='personal')
-        premises_form = PremisesForm(prefix='premises')
-        service_form = ChildcareServiceForm(prefix='service')
-        training_form = TrainingForm(prefix='training')
-        suitability_form = SuitabilityForm(prefix='suitability')
-        declaration_form = DeclarationForm(prefix='declaration')
+        # Initialize forms from session if exist
+        personal_form = PersonalDetailsForm(prefix='personal', instance=application.personal_details if application and hasattr(application, 'personal_details') else None)
+        premises_form = PremisesForm(prefix='premises', instance=application.premises if application and hasattr(application, 'premises') else None)
+        service_form = ChildcareServiceForm(prefix='service', instance=application.service_details if application and hasattr(application, 'service_details') else None)
+        training_form = TrainingForm(prefix='training', instance=application.training if application and hasattr(application, 'training') else None)
+        suitability_form = SuitabilityForm(prefix='suitability', instance=application.suitability if application and hasattr(application, 'suitability') else None)
+        declaration_form = DeclarationForm(prefix='declaration', instance=application.declaration if application and hasattr(application, 'declaration') else None)
         
-        address_formset = AddressEntryFormSet(prefix='address')
-        employment_formset = EmploymentEntryFormSet(prefix='employment')
-        household_formset = HouseholdMemberFormSet(prefix='household')
-        reference_formset = ReferenceFormSet(prefix='reference')
+        address_formset = AddressEntryFormSet(prefix='address', instance=application)
+        employment_formset = EmploymentEntryFormSet(prefix='employment', instance=application)
+        household_formset = HouseholdMemberFormSet(prefix='household', instance=application)
+        reference_formset = ReferenceFormSet(prefix='reference', instance=application)
 
     context = {
+        'application': application,
         'personal_form': personal_form,
         'premises_form': premises_form,
         'service_form': service_form,
