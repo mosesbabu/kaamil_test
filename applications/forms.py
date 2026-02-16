@@ -103,7 +103,11 @@ class TrainingForm(forms.ModelForm):
             'safeguarding_org': forms.TextInput(attrs={'class': 'input', 'required': 'true'}),
             'eyfs_date': forms.DateInput(attrs={'type': 'date', 'class': 'input input-md'}),
             'eyfs_org': forms.TextInput(attrs={'class': 'input'}),
+            'eyfs_course_title': forms.TextInput(attrs={'class': 'input'}),
+            'level2_qual_date': forms.DateInput(attrs={'type': 'date', 'class': 'input input-md'}),
+            'level2_qual_org': forms.TextInput(attrs={'class': 'input'}),
             'food_hygiene_date': forms.DateInput(attrs={'type': 'date', 'class': 'input input-md'}),
+            'food_hygiene_org': forms.TextInput(attrs={'class': 'input'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -113,7 +117,7 @@ class TrainingForm(forms.ModelForm):
             for field in self.fields.values():
                 field.required = False
         else:
-            for field in ['first_aid_completed', 'safeguarding_completed', 'eyfs_completed', 'food_hygiene_completed']:
+            for field in ['first_aid_completed', 'safeguarding_completed', 'eyfs_completed', 'level2_qual_completed', 'food_hygiene_completed']:
                 if field in self.fields:
                     self.fields[field].required = False
 
@@ -179,13 +183,14 @@ class DeclarationForm(forms.ModelForm):
 # Address History FormSet
 AddressEntryFormSet = forms.inlineformset_factory(
     Application, AddressEntry,
-    fields=['line1', 'line2', 'town', 'postcode', 'move_in_date', 'is_current'],
+    fields=['line1', 'line2', 'town', 'postcode', 'move_in_date', 'move_out_date', 'is_current'],
     widgets={
         'line1': forms.TextInput(attrs={'class': 'input', 'required': 'true'}),
         'line2': forms.TextInput(attrs={'class': 'input'}),
         'town': forms.TextInput(attrs={'class': 'input', 'required': 'true'}),
         'postcode': forms.TextInput(attrs={'class': 'input input-sm', 'style': 'text-transform: uppercase;', 'required': 'true'}),
         'move_in_date': forms.DateInput(attrs={'type': 'date', 'class': 'input input-md', 'required': 'true'}),
+        'move_out_date': forms.DateInput(attrs={'type': 'date', 'class': 'input input-md'}),
     },
     extra=1,
     can_delete=True

@@ -298,6 +298,62 @@
         .nav-number { width: 36px; height: 36px; font-size: 0.875rem; }
     }
 
+    /* Local Authority Search Styles */
+    .search-container { position: relative; }
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--rk-white);
+        border: 2px solid var(--rk-gray-300);
+        border-top: none;
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+    .search-results.active { display: block; }
+    .search-item {
+        padding: var(--space-3) var(--space-4);
+        cursor: pointer;
+        transition: background 0.2s;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .search-item:last-child { border-bottom: none; }
+    .search-item:hover, .search-item.highlighted {
+        background: var(--rk-primary-light);
+        color: var(--rk-primary);
+    }
+    .search-item .match { font-weight: 700; color: var(--rk-primary); }
+
+    /* Address Timeline Status */
+    .timeline-status {
+        background: var(--rk-white);
+        border: 2px solid var(--rk-gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        margin-bottom: var(--space-6);
+    }
+    .timeline-status.complete { background: var(--rk-success-bg); border-color: var(--rk-success); }
+    .timeline-status.incomplete { background: var(--rk-warning-bg); border-color: var(--rk-warning); }
+    .timeline-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+    .timeline-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .timeline-status.complete .timeline-icon { background: var(--rk-success); color: var(--rk-white); }
+    .timeline-status.incomplete .timeline-icon { background: var(--rk-warning); color: var(--rk-white); }
+    .timeline-title { font-weight: 600; color: var(--rk-gray-800); }
+    .timeline-text { font-size: 0.875rem; color: var(--rk-gray-700); }
+    .timeline-text ul { margin: var(--space-2) 0 0 var(--space-5); }
+    .timeline-text li { margin-bottom: var(--space-1); }
+
+    /* Training Sections */
+    .training-section { margin-bottom: var(--space-6); padding: var(--space-5); background: var(--rk-gray-50); border-radius: var(--radius-lg); border: 1px solid var(--rk-gray-200); }
+    .training-section.hidden { display: none; }
+    .training-details { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--rk-gray-200); }
+    .training-details.hidden { display: none; }
+
     @media (max-width: 768px) {
         .form-header { padding: var(--space-6); }
         .form-header h1 { font-size: 1.5rem; }
@@ -475,60 +531,117 @@
                     <h2 class="section-title">Address History</h2>
                     <p class="section-description">We need your complete address history for the past 5 years for background checks.</p>
 
-                    <div id="addressHistoryContainer">
-                        {{ address_formset.management_form }}
-                        {% for form in address_formset %}
-                        <div class="repeating-block">
-                            <div class="repeating-block-header">
-                                <h3 class="repeating-block-title">Address {{ forloop.counter }}</h3>
-                                {% if address_formset.can_delete and not forloop.first %}
-                                    <button type="button" class="remove-btn">Remove</button>
-                                {% endif %}
+                    <!-- History Overview -->
+                    <div class="timeline-status incomplete" id="addressTimelineStatus">
+                        <div class="timeline-header">
+                            <div class="timeline-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             </div>
-                            
-                            {{ form.id }}
-                            <div class="field-grid field-grid-2">
-                                <div class="field full-width {% if form.line1.errors %}has-error{% endif %}">
-                                    <label class="field-label">Address line 1 <span class="required">*</span></label>
-                                    {{ form.line1 }}
-                                    {% if form.line1.errors %}<span class="field-error">{{ form.line1.errors.0 }}</span>{% endif %}
-                                </div>
-                                <div class="field full-width {% if form.line2.errors %}has-error{% endif %}">
-                                    <label class="field-label">Address line 2</label>
-                                    {{ form.line2 }}
-                                    {% if form.line2.errors %}<span class="field-error">{{ form.line2.errors.0 }}</span>{% endif %}
-                                </div>
-                                <div class="field {% if form.town.errors %}has-error{% endif %}">
-                                    <label class="field-label">Town or city <span class="required">*</span></label>
-                                    {{ form.town }}
-                                    {% if form.town.errors %}<span class="field-error">{{ form.town.errors.0 }}</span>{% endif %}
-                                </div>
-                                <div class="field {% if form.postcode.errors %}has-error{% endif %}">
-                                    <label class="field-label">Postcode <span class="required">*</span></label>
-                                    {{ form.postcode }}
-                                    {% if form.postcode.errors %}<span class="field-error">{{ form.postcode.errors.0 }}</span>{% endif %}
-                                </div>
-                                <div class="field {% if form.move_in_date.errors %}has-error{% endif %}">
-                                    <label class="field-label">Date moved in <span class="required">*</span></label>
-                                    {{ form.move_in_date }}
-                                    {% if form.move_in_date.errors %}<span class="field-error">{{ form.move_in_date.errors.0 }}</span>{% endif %}
-                                </div>
+                            <h4 class="timeline-title" id="timelineTitle">Address history incomplete</h4>
+                        </div>
+                        <div class="timeline-text">
+                            <p id="timelineText">You have provided <span id="addressYearsText">0 years</span> of history. We need 5 years total.</p>
+                            <div id="addressGapsSection" class="hidden mt-4">
+                                <strong>Gaps found:</strong>
+                                <ul id="addressGapsList"></ul>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
-                    
-                    <button type="button" class="add-btn" id="addAddressHistory">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Add another address
-                    </button>
 
-                    <div class="info-box info">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        <div class="info-box-content">
-                            <h4>Address History Check</h4>
-                            <p>You have provided <strong id="addressCountText">1</strong> address(es), covering <strong id="addressYearsText">0 years</strong> of history. We need 5 years total.</p>
+                    {{ address_formset.management_form }}
+                    <div id="currentAddressSection">
+                        <h3 class="subsection-title">Your Current Address</h3>
+                        <div id="currentAddressContainer">
+                            {% for form in address_formset %}
+                                {% if forloop.first %}
+                                    <div class="repeating-block current-address">
+                                        {{ form.id }}
+                                        <div class="field-grid field-grid-2">
+                                            <div class="field full-width {% if form.line1.errors %}has-error{% endif %}">
+                                                <label class="field-label">Address line 1 <span class="required">*</span></label>
+                                                {{ form.line1 }}
+                                                {% if form.line1.errors %}<span class="field-error">{{ form.line1.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field full-width {% if form.line2.errors %}has-error{% endif %}">
+                                                <label class="field-label">Address line 2</label>
+                                                {{ form.line2 }}
+                                                {% if form.line2.errors %}<span class="field-error">{{ form.line2.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field {% if form.town.errors %}has-error{% endif %}">
+                                                <label class="field-label">Town or city <span class="required">*</span></label>
+                                                {{ form.town }}
+                                                {% if form.town.errors %}<span class="field-error">{{ form.town.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field {% if form.postcode.errors %}has-error{% endif %}">
+                                                <label class="field-label">Postcode <span class="required">*</span></label>
+                                                {{ form.postcode }}
+                                                {% if form.postcode.errors %}<span class="field-error">{{ form.postcode.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field {% if form.move_in_date.errors %}has-error{% endif %}">
+                                                <label class="field-label">Date moved in <span class="required">*</span></label>
+                                                {{ form.move_in_date }}
+                                                {% if form.move_in_date.errors %}<span class="field-error">{{ form.move_in_date.errors.0 }}</span>{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
+                    </div>
+
+                    <div id="previousAddressSection">
+                        <h3 class="subsection-title">Previous Addresses</h3>
+                        <div id="addressHistoryContainer">
+                            {% for form in address_formset %}
+                                {% if not forloop.first %}
+                                    <div class="repeating-block">
+                                        <div class="repeating-block-header">
+                                            <h3 class="repeating-block-title">Previous Address</h3>
+                                            <button type="button" class="remove-btn">Remove</button>
+                                        </div>
+                                        {{ form.id }}
+                                        <div class="field-grid field-grid-2">
+                                            <div class="field full-width {% if form.line1.errors %}has-error{% endif %}">
+                                                <label class="field-label">Address line 1 <span class="required">*</span></label>
+                                                {{ form.line1 }}
+                                                {% if form.line1.errors %}<span class="field-error">{{ form.line1.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field full-width {% if form.line2.errors %}has-error{% endif %}">
+                                                <label class="field-label">Address line 2</label>
+                                                {{ form.line2 }}
+                                                {% if form.line2.errors %}<span class="field-error">{{ form.line2.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field {% if form.town.errors %}has-error{% endif %}">
+                                                <label class="field-label">Town or city <span class="required">*</span></label>
+                                                {{ form.town }}
+                                                {% if form.town.errors %}<span class="field-error">{{ form.town.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field {% if form.postcode.errors %}has-error{% endif %}">
+                                                <label class="field-label">Postcode <span class="required">*</span></label>
+                                                {{ form.postcode }}
+                                                {% if form.postcode.errors %}<span class="field-error">{{ form.postcode.errors.0 }}</span>{% endif %}
+                                            </div>
+                                            <div class="field-grid field-grid-2 full-width">
+                                                <div class="field {% if form.move_in_date.errors %}has-error{% endif %}">
+                                                    <label class="field-label">Date moved in <span class="required">*</span></label>
+                                                    {{ form.move_in_date }}
+                                                    {% if form.move_in_date.errors %}<span class="field-error">{{ form.move_in_date.errors.0 }}</span>{% endif %}
+                                                </div>
+                                                <div class="field {% if form.move_out_date.errors %}has-error{% endif %}">
+                                                    <label class="field-label">Date moved out <span class="required">*</span></label>
+                                                    {{ form.move_out_date }}
+                                                    {% if form.move_out_date.errors %}<span class="field-error">{{ form.move_out_date.errors.0 }}</span>{% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-btn" id="addAddressHistory">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add another previous address
+                        </button>
                     </div>
 
                     <div class="subsection">
@@ -595,7 +708,14 @@
                     <p class="section-description">Tell us about the location where you will be providing childcare.</p>
                     <div class="subsection">
                         <h3 class="subsection-title">Local Authority</h3>
-                        <div class="field"><label class="field-label">Local authority <span class="required">*</span></label>{{ premises_form.local_authority }}</div>
+                        <div class="field">
+                            <label class="field-label">Local authority <span class="required">*</span></label>
+                            <div class="search-container">
+                                {{ premises_form.local_authority }}
+                                <div id="authorityResults" class="search-results"></div>
+                            </div>
+                            <span class="field-hint">Start typing your local authority name and select from the list.</span>
+                        </div>
                     </div>
                     <div class="subsection">
                         <h3 class="subsection-title">Premises Type</h3>
@@ -745,27 +865,176 @@
                 </section>
 
                 <!-- SECTION 4: TRAINING -->
+                <!-- SECTION 4: QUALIFICATIONS & TRAINING -->
                 <section class="form-section" id="section-4">
-                    <h2 class="section-title">Training & Qualifications</h2>
+                    <h2 class="section-title">Qualifications & Training</h2>
                     <p class="section-description">You must have completed the required training before registration. We will verify certificates during your pre-registration visit.</p>
- 
-                    <div class="subsection">
-                        <h3 class="subsection-title">First Aid Training</h3>
-                        <div class="field"><label class="field-label">Training provider <span class="required">*</span></label>{{ training_form.first_aid_org }}</div>
-                        <div class="field"><label class="field-label">Date of training <span class="required">*</span></label>{{ training_form.first_aid_date }}</div>
+
+                    <div id="firstAidSection" class="training-section hidden">
+                        <h3 style="font-weight: 600; margin-bottom: var(--space-3);">Paediatric First Aid (PFA)</h3>
+                        <div class="field">
+                            <label class="field-label">Have you completed a 12-hour Paediatric First Aid course? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="training-first_aid_completed" value="True" {% if training_form.first_aid_completed.value == True %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="training-first_aid_completed" value="False" {% if training_form.first_aid_completed.value == False %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="training-details {% if not training_form.first_aid_completed.value %}hidden{% endif %}" id="firstAidDetails">
+                            <div class="field-grid field-grid-2">
+                                <div class="field">
+                                    <label class="field-label">Training organisation <span class="required">*</span></label>
+                                    {{ training_form.first_aid_org }}
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">Date completed <span class="required">*</span></label>
+                                    {{ training_form.first_aid_date }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
- 
-                    <div class="subsection">
-                        <h3 class="subsection-title">Childminding Training (EYFS)</h3>
-                        <div class="field"><label class="field-label">Training provider <span class="required">*</span></label>{{ training_form.eyfs_org }}</div>
-                        <div class="field"><label class="field-label">Date completed <span class="required">*</span></label>{{ training_form.eyfs_date }}</div>
+
+                    <div id="safeguardingSection" class="training-section hidden">
+                        <h3 style="font-weight: 600; margin-bottom: var(--space-3);">Safeguarding and Child Protection</h3>
+                        <div class="field">
+                            <label class="field-label">Have you completed safeguarding training? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="training-safeguarding_completed" value="True" {% if training_form.safeguarding_completed.value == True %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="training-safeguarding_completed" value="False" {% if training_form.safeguarding_completed.value == False %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="training-details {% if not training_form.safeguarding_completed.value %}hidden{% endif %}" id="safeguardingDetails">
+                            <div class="field-grid field-grid-2">
+                                <div class="field">
+                                    <label class="field-label">Training organisation <span class="required">*</span></label>
+                                    {{ training_form.safeguarding_org }}
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">Date completed <span class="required">*</span></label>
+                                    {{ training_form.safeguarding_date }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="subsection">
-                        <h3 class="subsection-title">Safeguarding Training</h3>
-                        <div class="field"><label class="field-label">Training provider <span class="required">*</span></label>{{ training_form.safeguarding_org }}</div>
-                        <div class="field"><label class="field-label">Date completed <span class="required">*</span></label>{{ training_form.safeguarding_date }}</div>
+
+                    <div id="eyfsSection" class="training-section hidden">
+                        <h3 style="font-weight: 600; margin-bottom: var(--space-3);">Childminding Practice / EYFS Training</h3>
+                        <div class="field">
+                            <label class="field-label">Have you completed a relevant childminding course? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="training-eyfs_completed" value="True" {% if training_form.eyfs_completed.value == True %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="training-eyfs_completed" value="False" {% if training_form.eyfs_completed.value == False %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="training-details {% if not training_form.eyfs_completed.value %}hidden{% endif %}" id="eyfsDetails">
+                            <div class="field">
+                                <label class="field-label">Course title <span class="required">*</span></label>
+                                {{ training_form.eyfs_course_title }}
+                            </div>
+                            <div class="field-grid field-grid-2">
+                                <div class="field">
+                                    <label class="field-label">Training organisation <span class="required">*</span></label>
+                                    {{ training_form.eyfs_org }}
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">Date completed <span class="required">*</span></label>
+                                    {{ training_form.eyfs_date }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <div id="level2QualSection" class="training-section hidden">
+                        <h3 style="font-weight: 600; margin-bottom: var(--space-3);">Level 2 Qualification / Common Core Skills</h3>
+                        <div class="field">
+                            <label class="field-label">Do you have a minimum Level 2 qualification OR training in the common core skills? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="training-level2_qual_completed" value="True" {% if training_form.level2_qual_completed.value == True %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="training-level2_qual_completed" value="False" {% if training_form.level2_qual_completed.value == False %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="training-details {% if not training_form.level2_qual_completed.value %}hidden{% endif %}" id="level2Details">
+                            <div class="field-grid field-grid-2">
+                                <div class="field">
+                                    <label class="field-label">Training organisation <span class="required">*</span></label>
+                                    {{ training_form.level2_qual_org }}
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">Date completed <span class="required">*</span></label>
+                                    {{ training_form.level2_qual_date }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="training-section">
+                        <h3 style="font-weight: 600; margin-bottom: var(--space-3);">Food Hygiene (Recommended)</h3>
+                        <div class="field">
+                            <label class="field-label">Have you completed food hygiene training?</label>
+                            <span class="field-hint">Recommended if preparing food for children.</span>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="training-food_hygiene_completed" value="True" {% if training_form.food_hygiene_completed.value == True %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="training-food_hygiene_completed" value="False" {% if training_form.food_hygiene_completed.value == False %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="training-details {% if not training_form.food_hygiene_completed.value %}hidden{% endif %}" id="foodHygieneDetails">
+                            <div class="field-grid field-grid-2">
+                                <div class="field">
+                                    <label class="field-label">Training organisation <span class="required">*</span></label>
+                                    {{ training_form.food_hygiene_org }}
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">Date completed <span class="required">*</span></label>
+                                    {{ training_form.food_hygiene_date }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box info" id="trainingEmptyWarning">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <div class="info-box-content"><p>Please select your age groups to see required training.</p></div>
+                    </div>
+
                     <div class="form-navigation">
                         <div style="display:flex; gap: 10px;">
                             <button type="button" class="btn btn-secondary prev-btn">Back</button>
@@ -834,24 +1103,79 @@
                 <section class="form-section" id="section-6">
                     <h2 class="section-title">Household Members</h2>
                     <p class="section-description">We need details of everyone living at the childcare premises.</p>
+                    
                     {{ household_formset.management_form }}
-                    <div id="householdContainer">
-                        {% for form in household_formset %}
-                        <div class="repeating-block">
-                            <div class="repeating-block-header"><span class="repeating-block-title">Household Member</span>{% if not forloop.first %}<button type="button" class="remove-btn">Remove</button>{% endif %}</div>
-                            <div class="field-grid field-grid-2">
-                                <div class="field"><label class="field-label">First name <span class="required">*</span></label>{{ form.first_name }}</div>
-                                <div class="field"><label class="field-label">Last name <span class="required">*</span></label>{{ form.last_name }}</div>
+                    
+                    <div class="subsection">
+                        <div class="field">
+                            <label class="field-label">Do any other people aged 16 or over live or work at the premises? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="application-has_adults_in_home" value="True" {% if application.has_adults_in_home %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="application-has_adults_in_home" value="False" {% if application.has_adults_in_home == False %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
                             </div>
-                            <div class="field-grid field-grid-2">
-                                <div class="field"><label class="field-label">Date of birth <span class="required">*</span></label>{{ form.dob }}</div>
-                                <div class="field"><label class="field-label">Relationship <span class="required">*</span></label>{{ form.relationship }}</div>
-                            </div>
-                            <div class="field">{{ form.is_adult }} <span>Lives or works here regularly?</span></div>
                         </div>
-                        {% endfor %}
+                        
+                        <div id="adultsSection" class="{% if not application.has_adults_in_home %}hidden{% endif %}">
+                            <h3 class="subsection-title">People aged 16 or over</h3>
+                            <p class="field-hint mb-4">Include partners, older children, lodgers, or anyone who lives or works here regularly.</p>
+                            
+                            <div id="adultsContainer">
+                                {% for form in household_formset %}
+                                    <div class="repeating-block household-member-block" data-is-adult="{{ form.is_adult.value|default:'True' }}">
+                                        <div class="repeating-block-header">
+                                            <span class="repeating-block-title">Member</span>
+                                            {% if not forloop.first %}<button type="button" class="remove-btn">Remove</button>{% endif %}
+                                        </div>
+                                        <div class="field-grid field-grid-2">
+                                            <div class="field"><label class="field-label">First name <span class="required">*</span></label>{{ form.first_name }}</div>
+                                            <div class="field"><label class="field-label">Last name <span class="required">*</span></label>{{ form.last_name }}</div>
+                                        </div>
+                                        <div class="field-grid field-grid-2">
+                                            <div class="field"><label class="field-label">Date of birth <span class="required">*</span></label>{{ form.dob }}</div>
+                                            <div class="field"><label class="field-label">Relationship <span class="required">*</span></label>{{ form.relationship }}</div>
+                                        </div>
+                                        <div class="field hidden">{{ form.is_adult }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="add-btn" id="addHouseholdMember">Add another person</button>
+                        </div>
                     </div>
-                    <button type="button" class="add-btn" id="addHouseholdMember">Add another member</button>
+
+                    <div class="subsection">
+                        <div class="field">
+                            <label class="field-label">Does anyone under the age of 16 live at the premises? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="application-has_children_in_home" value="True" {% if application.has_children_in_home %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="application-has_children_in_home" value="False" {% if application.has_children_in_home == False %}checked{% endif %}>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="childrenSection" class="{% if not application.has_children_in_home %}hidden{% endif %}">
+                            <h3 class="subsection-title">Children under 16</h3>
+                            <div id="childrenContainer">
+                                <!-- Children will be moved here by JS if is_adult is False -->
+                            </div>
+                            <button type="button" class="add-btn" id="addChildMember">Add another child</button>
+                        </div>
+                    </div>
+
                     <div class="form-navigation">
                         <div style="display:flex; gap: 10px;">
                             <button type="button" class="btn btn-secondary prev-btn">Back</button>
@@ -863,71 +1187,91 @@
 
                 <!-- SECTION 7: SUITABILITY -->
                 <section class="form-section" id="section-7">
-                    <h2 class="section-title">Suitability</h2>
+                    <h2 class="section-title">Suitability & DBS</h2>
                     <p class="section-description">Important declarations about your suitability to work with children.</p>
  
-                    <div class="field">
-                        <label class="field-label">Do you have any medical conditions? <span class="required">*</span></label>
-                        <div class="radio-group horizontal">
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-has_medical_condition" value="True" {% if suitability_form.has_medical_condition.value == True %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">Yes</span>
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-has_medical_condition" value="False" {% if suitability_form.has_medical_condition.value == False %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">No</span>
-                            </label>
+                    <div class="subsection">
+                        <h3 class="subsection-title">Health Declaration</h3>
+                        <div class="field">
+                            <label class="field-label">Do you have any medical conditions? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-has_medical_condition" value="True" {% if suitability_form.has_medical_condition.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-has_medical_condition" value="False" {% if suitability_form.has_medical_condition.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field {% if not suitability_form.has_medical_condition.value %}hidden{% endif %}" id="medical-details-field">
+                            <label class="field-label">Details of medical conditions</label>
+                            {{ suitability_form.medical_condition_details }}
                         </div>
                     </div>
-                    <div class="field {% if not suitability_form.has_medical_condition.value %}hidden{% endif %}" id="medical-details-field"><label class="field-label">Details of medical conditions</label>{{ suitability_form.medical_condition_details }}</div>
- 
-                    <div class="field">
-                        <label class="field-label">Involved with social services? <span class="required">*</span></label>
-                        <div class="radio-group horizontal">
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-social_services_involved" value="True" {% if suitability_form.social_services_involved.value == True %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">Yes</span>
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-social_services_involved" value="False" {% if suitability_form.social_services_involved.value == False %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">No</span>
-                            </label>
+
+                    <div class="subsection">
+                        <h3 class="subsection-title">Legal Declarations</h3>
+                        <div class="field">
+                            <label class="field-label">Involved with social services? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-social_services_involved" value="True" {% if suitability_form.social_services_involved.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-social_services_involved" value="False" {% if suitability_form.social_services_involved.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field {% if not suitability_form.social_services_involved.value %}hidden{% endif %}" id="social-services-field">
+                            <label class="field-label">Details of involvement</label>
+                            {{ suitability_form.social_services_details }}
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label">Are you disqualified under the Childcare Act 2006? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-is_disqualified" value="True" {% if suitability_form.is_disqualified.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-is_disqualified" value="False" {% if suitability_form.is_disqualified.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
- 
-                    <div class="field">
-                        <label class="field-label">Are you disqualified under the Childcare Act 2006? <span class="required">*</span></label>
-                        <div class="radio-group horizontal">
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-is_disqualified" value="True" {% if suitability_form.is_disqualified.value == True %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">Yes</span>
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-is_disqualified" value="False" {% if suitability_form.is_disqualified.value == False %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">No</span>
-                            </label>
+
+                    <div class="subsection">
+                        <h3 class="subsection-title">DBS Certificate</h3>
+                        <div class="field">
+                            <label class="field-label">Do you have an Enhanced DBS? <span class="required">*</span></label>
+                            <div class="radio-group horizontal">
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-has_dbs" value="True" {% if suitability_form.has_dbs.value == True %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">Yes</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="suitability-has_dbs" value="False" {% if suitability_form.has_dbs.value == False %}checked{% endif %} required>
+                                    <span class="radio-indicator"></span>
+                                    <span class="option-label">No</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
- 
-                    <div class="field">
-                        <label class="field-label">Do you have an Enhanced DBS? <span class="required">*</span></label>
-                        <div class="radio-group horizontal">
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-has_dbs" value="True" {% if suitability_form.has_dbs.value == True %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">Yes</span>
-                            </label>
-                            <label class="radio-item">
-                                <input type="radio" name="suitability-has_dbs" value="False" {% if suitability_form.has_dbs.value == False %}checked{% endif %} required>
-                                <span class="radio-indicator"></span>
-                                <span class="option-label">No</span>
-                            </label>
+                        <div class="field {% if not suitability_form.has_dbs.value %}hidden{% endif %}" id="dbs-number-field">
+                            <label class="field-label">DBS certificate number <span class="required">*</span></label>
+                            {{ suitability_form.dbs_number }}
                         </div>
                     </div>
  
@@ -1246,55 +1590,111 @@
 
         // Address History Year Calculator
         function updateAddressHistory() {
-            const dateInputs = document.querySelectorAll('input[name$="-move_in_date"]');
-            let earliestDate = null;
-            let count = 0;
-            let futureDateFound = false;
+            const addressEntries = document.querySelectorAll('#section-1 .repeating-block');
+            const today = new Date();
+            const fiveYearsAgo = new Date();
+            fiveYearsAgo.setFullYear(today.getFullYear() - 5);
             
-            dateInputs.forEach(input => {
-                if (input.value) {
-                    const d = new Date(input.value);
-                    if (!isNaN(d.getTime())) {
-                        count++;
-                        if (!earliestDate || d < earliestDate) earliestDate = d;
-                        if (d > new Date()) futureDateFound = true;
+            let addresses = [];
+            addressEntries.forEach(entry => {
+                const moveInInput = entry.querySelector('input[name$="-move_in_date"]');
+                const moveOutInput = entry.querySelector('input[name$="-move_out_date"]');
+                
+                if (moveInInput && moveInInput.value) {
+                    const moveIn = new Date(moveInInput.value);
+                    let moveOut = today;
+                    if (moveOutInput && moveOutInput.value) {
+                        moveOut = new Date(moveOutInput.value);
+                    } else if (!entry.classList.contains('current-address')) {
+                        // If not the current address and no move out date, it's invalid but we'll treat as today for calc
+                        moveOut = today;
+                    }
+
+                    if (!isNaN(moveIn.getTime()) && !isNaN(moveOut.getTime())) {
+                        addresses.push({ moveIn, moveOut, entry });
                     }
                 }
             });
+
+            // Sort by moveIn ascending
+            addresses.sort((a, b) => a.moveIn - b.moveIn);
+
+            let totalDays = 0;
+            let gaps = [];
+            let coveredIntervals = [];
+
+            if (addresses.length > 0) {
+                 // Check for overlaps and gaps
+                 for (let i = 0; i < addresses.length; i++) {
+                     const addr = addresses[i];
+                     const start = addr.moveIn < fiveYearsAgo ? fiveYearsAgo : addr.moveIn;
+                     const end = addr.moveOut;
+
+                     if (end > start) {
+                         coveredIntervals.push({ start, end });
+                     }
+
+                     if (i > 0) {
+                         const prevEnd = addresses[i-1].moveOut;
+                         const nextStart = addresses[i].moveIn;
+                         const diff = (nextStart - prevEnd) / (1000 * 60 * 60 * 24);
+                         if (diff > 2) { // Allow 2 days for margin of error
+                             gaps.push({ start: prevEnd, end: nextStart });
+                         }
+                     }
+                 }
+
+                 // Merge intervals and calculate total coverage
+                 if (coveredIntervals.length > 0) {
+                     coveredIntervals.sort((a, b) => a.start - b.start);
+                     let merged = [coveredIntervals[0]];
+                     for (let i = 1; i < coveredIntervals.length; i++) {
+                         let last = merged[merged.length - 1];
+                         let curr = coveredIntervals[i];
+                         if (curr.start <= last.end) {
+                             last.end = new Date(Math.max(last.end, curr.end));
+                         } else {
+                             merged.push(curr);
+                         }
+                     }
+                     
+                     let totalDiff = 0;
+                     merged.forEach(interval => {
+                         totalDiff += (interval.end - interval.start);
+                     });
+                     totalDays = totalDiff / (1000 * 60 * 60 * 24);
+                 }
+            }
+
+            const totalYears = (totalDays / 365.25).toFixed(1);
+
+            // UI Update
+            const statusBox = document.getElementById('addressTimelineStatus');
+            const title = document.getElementById('timelineTitle');
+            const text = document.getElementById('timelineText');
+            const gapsSection = document.getElementById('addressGapsSection');
+            const gapsList = document.getElementById('addressGapsList');
+
+            const isFullCoverage = totalYears >= 5.0;
+            const hasGaps = gaps.length > 0;
+            const isComplete = isFullCoverage && !hasGaps;
             
-            const countEl = document.getElementById('addressCountText');
-            if (countEl) countEl.textContent = count;
+            if (statusBox) {
+                statusBox.className = `timeline-status ${isComplete ? 'complete' : 'incomplete'}`;
+            }
+            if (title) {
+                title.textContent = isComplete ? 'Address history complete' : 'Address history incomplete';
+            }
+            if (text) {
+                text.innerHTML = `You have provided <strong>${totalYears} years</strong> of history. We need 5 years total.`;
+            }
 
-            const textEl = document.getElementById('addressYearsText');
-            if (textEl) {
-                if (earliestDate) {
-                    const today = new Date();
-                    let years = today.getFullYear() - earliestDate.getFullYear();
-                    let months = today.getMonth() - earliestDate.getMonth();
-                    
-                    if (months < 0 || (months === 0 && today.getDate() < earliestDate.getDate())) {
-                        years--;
-                        months += 12;
-                    }
-                    
-                    years = Math.max(0, years);
-                    
-                    let timeStr = `${years} year${years !== 1 ? 's' : ''}`;
-                    if (years < 5) {
-                        timeStr += ` and ${months} month${months !== 1 ? 's' : ''}`;
-                    }
-
-                    if (futureDateFound) {
-                        timeStr = "Invalid (future date)";
-                        textEl.style.color = 'var(--rk-error)';
-                    } else {
-                        textEl.style.color = (years >= 5) ? 'var(--rk-success)' : 'var(--rk-error)';
-                    }
-                    
-                    textEl.textContent = timeStr;
+            if (gapsSection && gapsList) {
+                if (hasGaps) {
+                    gapsSection.classList.remove('hidden');
+                    gapsList.innerHTML = gaps.map(g => `<li>Gap from ${g.start.toLocaleDateString('en-GB', {month:'short', year:'numeric'})} to ${g.end.toLocaleDateString('en-GB', {month:'short', year:'numeric'})}</li>`).join('');
                 } else {
-                    textEl.textContent = '0 years';
-                    textEl.style.color = 'var(--rk-error)';
+                    gapsSection.classList.add('hidden');
                 }
             }
         }
@@ -1345,7 +1745,6 @@
 
         setupFormSet('addressHistoryContainer', 'addAddressHistory', 'address', updateAddressHistory);
         setupFormSet('employmentHistoryContainer', 'addEmploymentHistory', 'employment');
-        setupFormSet('householdContainer', 'addHouseholdMember', 'household');
         setupFormSet('referenceContainer', 'addReference', 'reference');
 
         function setupToggle(triggerName, targetId, showValue = 'True') {
@@ -1371,42 +1770,170 @@
             document.querySelectorAll(`[name="${triggerName}"]`).forEach(el => el.addEventListener('change', update));
             update();
         }
+
+        // Section 6 Household Toggles
+        setupToggle('application-has_adults_in_home', 'adultsSection');
+        setupToggle('application-has_children_in_home', 'childrenSection');
+
+        function organizeHouseholdMembers() {
+            const adultsContainer = document.getElementById('adultsContainer');
+            const childrenContainer = document.getElementById('childrenContainer');
+            if (!adultsContainer || !childrenContainer) return;
+            
+            document.querySelectorAll('.household-member-block').forEach(block => {
+                const isAdultInput = block.querySelector('input[name$="-is_adult"]');
+                if (!isAdultInput) return;
+                const isAdult = isAdultInput.value === 'True';
+                if (isAdult) {
+                    adultsContainer.appendChild(block);
+                } else {
+                    childrenContainer.appendChild(block);
+                }
+            });
+        }
+        
+        organizeHouseholdMembers();
+
+        function setupHouseholdButtons() {
+            const addAdultBtn = document.getElementById('addHouseholdMember');
+            const addChildBtn = document.getElementById('addChildMember');
+            const totalForms = document.getElementById(`id_household-TOTAL_FORMS`);
+            const adultsContainer = document.getElementById('adultsContainer');
+            const childrenContainer = document.getElementById('childrenContainer');
+            
+            if (!addAdultBtn || !addChildBtn || !totalForms) return;
+
+            function createMember(isAdult) {
+                const formNum = parseInt(totalForms.value);
+                const blocks = document.querySelectorAll('.household-member-block');
+                // Use the first block as template if possible, or any existing one
+                const templateBlock = blocks[0];
+                if (!templateBlock) return; 
+                
+                const newForm = templateBlock.cloneNode(true);
+                newForm.innerHTML = newForm.innerHTML.replace(/household-\d+-/g, `household-${formNum}-`);
+                newForm.querySelectorAll('input, select, textarea').forEach(i => { 
+                    if(i.type !== 'hidden') i.value = ''; 
+                });
+                
+                // Set is_adult
+                const isAdultInput = newForm.querySelector('input[name$="-is_adult"]');
+                if (isAdultInput) isAdultInput.value = isAdult ? 'True' : 'False';
+                
+                // Ensure remove button exists
+                if (!newForm.querySelector('.remove-btn')) {
+                    const header = newForm.querySelector('.repeating-block-header');
+                    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'remove-btn'; btn.textContent = 'Remove';
+                    header.appendChild(btn);
+                }
+                
+                if (isAdult) adultsContainer.appendChild(newForm);
+                else childrenContainer.appendChild(newForm);
+                
+                totalForms.value = formNum + 1;
+                
+                // Re-bind radio interactions for new elements
+                applyRadioInteractions(newForm);
+            }
+
+            function applyRadioInteractions(block) {
+                 block.querySelectorAll('.radio-item, .checkbox-item').forEach(item => {
+                    const input = item.querySelector('input');
+                    item.addEventListener('click', (e) => {
+                        if (e.target === input) return;
+                        if (input.type === 'radio') {
+                            const groupName = input.name;
+                            document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => {
+                                r.closest('.radio-item')?.classList.remove('selected');
+                            });
+                            input.checked = true;
+                            item.classList.add('selected');
+                        } else {
+                            input.checked = !input.checked;
+                            item.classList.toggle('selected', input.checked);
+                        }
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                });
+            }
+
+            addAdultBtn.addEventListener('click', () => createMember(true));
+            addChildBtn.addEventListener('click', () => createMember(false));
+            
+            // Re-bind remove for BOTH containers
+            [adultsContainer, childrenContainer].forEach(container => {
+                container.addEventListener('click', e => {
+                    if (e.target.classList.contains('remove-btn')) {
+                        e.target.closest('.repeating-block').remove();
+                        totalForms.value = document.querySelectorAll('.household-member-block').length;
+                    }
+                });
+            });
+        }
+        
+        setupHouseholdButtons();
+
+        // Suitability Toggles
+        setupToggle('suitability-has_medical_condition', 'medical-details-field');
+        setupToggle('suitability-social_services_involved', 'social-services-field');
+        setupToggle('suitability-has_dbs', 'dbs-number-field');
+        
+        // Training sub-toggles
+        setupToggle('training-first_aid_completed', 'first_aid_details');
+        setupToggle('training-safeguarding_completed', 'safeguarding_details');
+        setupToggle('training-eyfs_completed', 'eyfs_details');
+        setupToggle('training-level2_qual_completed', 'level2Details');
+        setupToggle('training-food_hygiene_completed', 'foodHygieneDetails');
         // ═══════════════════════════════════════════════════════════════
         // AGE GROUP TRAINING REQUIREMENTS
         // ═══════════════════════════════════════════════════════════════
-        const ageGroupCheckboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
-        const trainingSection = document.getElementById('section-4');
-        
-        // We need to manage visibility of specific training subsections based on age groups
-        // But the current HTML structure for Section 4 is static. 
-        // Let's assume for now we just need to ensure the checkboxes work visually and maybe toggle requirements if needed.
-        // The user said "checkbox doesn't work", implying they can't select them or nothing happens.
-        // My previous fix for "createRepeatingBlock" syntax error should have fixed the visual selection if the event listeners were set up.
-        // But let's add specific logic if there are dependencies.
-        
         function handleAgeGroupChange() {
-            // detailed logic from reference if needed, but primarily ensure visual toggle works via the global listener
-            // The global listener for .checkbox-item handles the visual state.
-            // If that is working, then "doesn't work" might mean specific side effects are missing.
-            // Reference had: Toggle First Aid / Safeguarding / EYFS sections based on age group.
-            
             const is0to5 = document.querySelector('input[name="service-care_age_0_5"]')?.checked;
             const is5to7 = document.querySelector('input[name="service-care_age_5_8"]')?.checked;
             const is8plus = document.querySelector('input[name="service-care_age_8_plus"]')?.checked;
 
-            // Example logic:
-            // 0-5: Needs EYFS, Paediatric First Aid
-            // 5-7: Needs Safeguarding
-            // 8+: Needs Safeguarding
+            const firstAid = document.getElementById('firstAidSection');
+            const safeguarding = document.getElementById('safeguardingSection');
+            const eyfs = document.getElementById('eyfsSection');
+            const level2 = document.getElementById('level2QualSection');
+            const warning = document.getElementById('trainingEmptyWarning');
+
+            // Logic:
+            // 0-5: Needs PFA and EYFS and Safeguarding
+            // 5-8 or 8+: Needs Safeguarding and Level 2
             
-            // For this specific request, I will mostly ensure the visual toggle works.
-            // The global listener I verified earlier SHOULD handle it.
-            // But let's double check if these specific inputs are targeted correctly.
-            // They are inside label.checkbox-item > input.
-            // My global listener targets .checkbox-item and finds input inside.
+            let anySelected = false;
+            
+            if (is0to5) {
+                firstAid?.classList.remove('hidden');
+                eyfs?.classList.remove('hidden');
+                safeguarding?.classList.remove('hidden');
+                level2?.classList.add('hidden');
+                anySelected = true;
+            } else if (is5to7 || is8plus) {
+                firstAid?.classList.add('hidden');
+                eyfs?.classList.add('hidden');
+                safeguarding?.classList.remove('hidden');
+                level2?.classList.remove('hidden');
+                anySelected = true;
+            } else {
+                firstAid?.classList.add('hidden');
+                eyfs?.classList.add('hidden');
+                safeguarding?.classList.add('hidden');
+                level2?.classList.add('hidden');
+            }
+
+            if (warning) {
+                if (anySelected) warning.classList.add('hidden');
+                else warning.classList.remove('hidden');
+            }
         }
 
-        ageGroupCheckboxes.forEach(cb => cb.addEventListener('change', handleAgeGroupChange));
+        document.querySelectorAll('input[name^="service-care_age_"]').forEach(cb => {
+            cb.addEventListener('change', handleAgeGroupChange);
+        });
+        // Run once on load
+        handleAgeGroupChange();
         
         // ═══════════════════════════════════════════════════════════════
         // REPEATING BLOCKS
@@ -1472,21 +1999,116 @@
         if (rightToWorkSelect) {
             rightToWorkSelect.addEventListener('change', function() {
                 const info = document.getElementById('rightToWorkInfo');
-                 // Logic: Hidden if status matches accepted types. Shown if "No" or potentially ambiguous/requiring check?
-                 // Reference: info.classList.toggle('hidden', this.value !== 'No' && this.value !== 'Yes, I have a relevant Visa');
-                 // This means it shows for "No" and "Visa". Hides for "British Citizen", "Settled", etc.
-                 // let's check values in models.py: 'British Citizen', 'Irish Citizen', 'EU Settled Status', 'EU Pre-settled Status', 'Visa / Work Permit'
-                 // So we show warning if "No" (user can't select No in dropdown, but maybe empty?) 
-                 // Actually reference values were "No", "Yes...Visa".
-                 // My model values are different. 'Visa / Work Permit' is likely the one to show warning for? Or maybe just 'Visa / Work Permit'.
-                 // Let's assume we show the warning/info box if they need to provide evidence, i.e. NOT British/Irish/Settled.
                  const val = this.value;
-                 const showInfo = val === 'Visa / Work Permit'; 
-                 // Wait, the reference showed it for "No" as well. But my dropdown doesn't have "No".
-                 // It has 'British Citizen', 'Irish Citizen', 'EU Settled Status', 'EU Pre-settled Status', 'Visa / Work Permit'.
-                 // So I will show it for 'Visa / Work Permit'.
                  if (info) info.classList.toggle('hidden', val !== 'Visa / Work Permit');
             });
+        }
+
+        // Local Authority Search Implementation
+        const authorities = [
+            "Aberdeen City", "Aberdeenshire", "Adur District", "Allerdale Borough", "Amber Valley Borough", "Angus", "Argyll and Bute", "Arun District", "Ashfield District", "Ashford Borough", "Aylesbury Vale District", "Babergh District", "Barking and Dagenham", "Barnet", "Barnsley Metropolitan Borough", "Barrow-in-Furness Borough", "Basildon Borough", "Basingstoke and Deane Borough", "Bassetlaw District", "Bath and North East Somerset", "Bedford Borough", "Bexley", "Birmingham City", "Blaby District", "Blackburn with Darwen Borough", "Blackpool Borough", "Blaenau Gwent County Borough", "Bolsover District", "Bolton Metropolitan Borough", "Boston Borough", "Bournemouth", "Bracknell Forest Borough", "Bradford City", "Braintree District", "Breckland District", "Brent", "Brentwood Borough", "Bridgend County Borough", "Brighton and Hove", "Bristol City", "Broadland District", "Bromley", "Bromsgrove District", "Broxbourne Borough", "Broxtowe Borough", "Buckinghamshire", "Burnley Borough", "Bury Metropolitan Borough", "Caerphilly County Borough", "Calderdale Metropolitan Borough", "Cambridge City", "Cambridgeshire", "Camden", "Cannock Chase District", "Canterbury City", "Cardiff City", "Carlisle City", "Carmarthenshire", "Castle Point Borough", "Central Bedfordshire", "Ceredigion", "Charnwood Borough", "Chelmsford City", "Cheltenham Borough", "Cherwell District", "Cheshire East", "Cheshire West and Chester", "Chesterfield Borough", "Chichester District", "Chiltern District", "Chorley Borough", "Christchurch Borough", "City of London", "Clackmannanshire", "Colchester Borough", "Conwy County Borough", "Copeland Borough", "Corby Borough", "Cornwall", "Cotswold District", "Coventry City", "Craven District", "Crawley Borough", "Croydon", "Cumbria", "Dacorum Borough", "Darlington Borough", "Dartford Borough", "Daventry District", "Denbighshire", "Derby City", "Derbyshire", "Derbyshire Dales District", "Derry and Strabane", "Devon", "Doncaster Metropolitan Borough", "Dorset", "Dover District", "Dudley Metropolitan Borough", "Dumfries and Galloway", "Dundee City", "Durham County", "Ealing", "East Ayrshire", "East Cambridgeshire District", "East Devon District", "East Dorset District", "East Dunbartonshire", "East Hampshire District", "East Hertfordshire District", "East Lindsey District", "East Lothian", "East Northamptonshire District", "East Renfrewshire", "East Riding of Yorkshire", "East Staffordshire Borough", "East Suffolk", "East Sussex", "Eastcehster District", "Eastleigh Borough", "Eastbourne Borough", "Eden District", "Edinburgh City", "Eilean Siar", "Elmbridge Borough", "Enfield", "Epping Forest District", "Epsom and Ewell Borough", "Erewash Borough", "Essex", "Exeter City", "Falkirk", "Fareham Borough", "Fenland District", "Fife", "Flintshire", "Forest Heath District", "Forest of Dean District", "Fylde Borough", "Gateshead Metropolitan Borough", "Gedling Borough", "Glasgow City", "Gloucester City", "Gloucestershire", "Gosport Borough", "Gravesham Borough", "Great Yarmouth Borough", "Greenwich", "Guildford Borough", "Gwynedd", "Hackney", "Halton Borough", "Hambleton District", "Hammersmith and Fulham", "Hampshire", "Harborough District", "Haringey", "Harlow District", "Harrogate Borough", "Harrow", "Hart District", "Hartlepool Borough", "Hastings Borough", "Havant Borough", "Havering", "Herefordshire", "Hertfordshire", "Hertsmere Borough", "High Peak Borough", "Highland", "Hillingdon", "Hinckley and Bosworth Borough", "Horsham District", "Hounslow", "Huntingdonshire District", "Hyndburn Borough", "Inverclyde", "Ipswich Borough", "Isle of Anglesey", "Isle of Wight", "Islington", "Kensington and Chelsea", "Kent", "Kettering Borough", "King's Lynn and West Norfolk Borough", "Kingston upon Hull City", "Kingston upon Thames", "Kirklees Metropolitan Borough", "Knowsley Metropolitan Borough", "Lambeth", "Lancashire", "Lancaster City", "Leeds City", "Leicester City", "Leicestershire", "Lewes District", "Lewisham", "Lichfield District", "Lincoln City", "Lincolnshire", "Liverpool City", "Luton Borough", "Maidstone Borough", "Maldon District", "Malvern Hills District", "Manchester City", "Mansfield District", "Medway", "Melton Borough", "Mendip District", "Merthyr Tydfil County Borough", "Merton", "Mid Devon District", "Mid Suffolk District", "Mid Sussex District", "Middlesbrough Borough", "Midlothian", "Milton Keynes", "Mole Valley District", "Monmouthshire", "Moray", "Nairobi", "Neath Port Talbot County Borough", "New Forest District", "Newark and Sherwood District", "Newcastle-under-Lyme Borough", "Newcastle upon Tyne City", "Newham", "Newport City", "Norfolk", "North Ayrshire", "North Devon District", "North Dorset District", "North East Derbyshire District", "North East Lincolnshire", "North Hertfordshire District", "North Kesteven District", "North Lanarkshire", "North Lincolnshire", "North Norfolk District", "North Somerset", "North Tyneside Metropolitan Borough", "North Warwickshire Borough", "North West Leicestershire District", "North York Moors National Park", "North Yorkshire", "Northampton Borough", "Northamptonshire", "Northumberland", "Norwich City", "Nottingham City", "Nottinghamshire", "Nuneaton and Bedworth Borough", "Oadby and Wigston Borough", "Oldham Metropolitan Borough", "Orkney Islands", "Oxford City", "Oxfordshire", "Pembrokeshire", "Pendle Borough", "Perth and Kinross", "Peterborough City", "Plymouth City", "Poole", "Portsmouth City", "Powys", "Preston City", "Purbeck District", "Reading Borough", "Redbridge", "Redcar and Cleveland Borough", "Redditch Borough", "Reigate and Banstead Borough", "Renfrewshire", "Rhondda Cynon Taf County Borough", "Ribble Valley Borough", "Richmond upon Thames", "Richmondshire District", "Rochdale Metropolitan Borough", "Rochford District", "Rochford District", "Rossendale Borough", "Rother District", "Rotherham Metropolitan Borough", "Rugby Borough", "Runnymede Borough", "Rushcliffe Borough", "Rushmoor Borough", "Rutland", "Ryedale District", "Salford City", "Sandwell Metropolitan Borough", "Scarborough Borough", "Scottish Borders", "Sedgemoor District", "Sefton Borough", "Selby District", "Sevenoaks District", "Sheffield City", "Shepway District", "Shetland Islands", "Shropshire", "Slough Borough", "Solihull Metropolitan Borough", "Somerset", "South Ayrshire", "South Cambridgeshire District", "South Derbyshire District", "South Gloucestershire", "South Hams District", "South Holland District", "South Kesteven District", "South Lakeland District", "South Lanarkshire", "South Norfolk District", "South Northamptonshire District", "South Oxfordshire District", "South Ribble Borough", "South Somerset District", "South Staffs District", "South Tyneside Metropolitan Borough", "Southampton City", "Southend-on-Sea Borough", "Southwark", "Spelthorne Borough", "St Albans City", "St Edmundsbury Borough", "St Helens Metropolitan Borough", "Stafford Borough", "Staffordshire", "Staffordshire Moorlands District", "Stevenage Borough", "Stirling", "Stockport Metropolitan Borough", "Stockton-on-Tees Borough", "Stoke-on-Trent City", "Stratford-on-Avon District", "Stroud District", "Suffolk Coastal District", "Sunderland City", "Surrey", "Surrey Heath Borough", "Sutton", "Swale Borough", "Swansea City", "Swindon Borough", "Tameside Metropolitan Borough", "Tamworth Borough", "Tandridge District", "Taunton Deane Borough", "Teignbridge District", "Telford and Wrekin Borough", "Tendring District", "Test Valley Borough", "Tewkesbury Borough", "Thanet District", "Three Rivers District", "Thurrock Borough", "Tonbridge and Malling Borough", "Torbay Borough", "Torfaen County Borough", "Torridge District", "Tower Hamlets", "Trafford Metropolitan Borough", "Tunbridge Wells Borough", "Uttlesford District", "Vale of White Horse District", "Wakefield Metropolitan Borough", "Walsall Metropolitan Borough", "Waltham Forest", "Wandsworth", "Warrington Borough", "Warwick District", "Warwickshire", "Watford Borough", "Waveney District", "Waverley Borough", "Wealden District", "Wellingborough Borough", "Welwyn Hatfield Borough", "West Berkshire", "West Devon Borough", "West Dorset District", "West Dunbartonshire", "West Lancashire District", "West Lindsey District", "West Lothian", "West Oxfordshire District", "West Somerset District", "West Suffolk Borough", "West Sussex", "West Wiltshire District", "Westminster", "Weymouth and Portland Borough", "Wigan Metropolitan Borough", "Wiltshire", "Winchester City", "Windsor and Maidenhead Borough", "Wirral Metropolitan Borough", "Woking Borough", "Wokingham Borough", "Wolverhampton City", "Worcester City", "Worcestershire", "Worthing Borough", "Wrexham County Borough", "Wychavon District", "Wycombe District", "Wyre Borough", "Wyre Forest District", "York City"
+        ];
+
+        const authoritySearch = document.getElementById('authoritySearch');
+        const authorityResults = document.getElementById('authorityResults');
+        let highlightedIndex = -1;
+
+        if (authoritySearch && authorityResults) {
+            authoritySearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                authorityResults.innerHTML = '';
+                highlightedIndex = -1;
+
+                if (!query) {
+                    authorityResults.classList.remove('active');
+                    return;
+                }
+
+                const matches = authorities.filter(a => a.toLowerCase().includes(query))
+                    .sort((a, b) => {
+                        const aStart = a.toLowerCase().startsWith(query);
+                        const bStart = b.toLowerCase().startsWith(query);
+                        if (aStart && !bStart) return -1;
+                        if (!aStart && bStart) return 1;
+                        return a.localeCompare(b);
+                    })
+                    .slice(0, 10);
+
+                if (matches.length > 0) {
+                    matches.forEach(match => {
+                        const div = document.createElement('div');
+                        div.className = 'search-item';
+                        
+                        // Highlight match
+                        const matchIndex = match.toLowerCase().indexOf(query);
+                        const before = match.substring(0, matchIndex);
+                        const middle = match.substring(matchIndex, matchIndex + query.length);
+                        const after = match.substring(matchIndex + query.length);
+                        div.innerHTML = `${before}<span class="match">${middle}</span>${after}`;
+                        
+                        div.addEventListener('click', () => selectAuthority(match));
+                        authorityResults.appendChild(div);
+                    });
+                    authorityResults.classList.add('active');
+                } else {
+                    authorityResults.classList.remove('active');
+                }
+            });
+
+            authoritySearch.addEventListener('keydown', function(e) {
+                const items = authorityResults.querySelectorAll('.search-item');
+                if (!authorityResults.classList.contains('active')) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightedIndex = (highlightedIndex + 1) % items.length;
+                    updateHighlight(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightedIndex = (highlightedIndex - 1 + items.length) % items.length;
+                    updateHighlight(items);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightedIndex >= 0) {
+                        selectAuthority(items[highlightedIndex].textContent);
+                    }
+                } else if (e.key === 'Escape') {
+                    authorityResults.classList.remove('active');
+                }
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!authoritySearch.contains(e.target) && !authorityResults.contains(e.target)) {
+                    authorityResults.classList.remove('active');
+                }
+            });
+
+            // Enforce selection from list
+            authoritySearch.addEventListener('blur', function() {
+                setTimeout(() => {
+                    const val = this.value.trim();
+                    if (val && !authorities.some(a => a === val)) {
+                        this.value = '';
+                        this.classList.add('error');
+                    } else if (val) {
+                        this.classList.remove('error');
+                    }
+                }, 200); // Small delay to allow click event on results to fire first
+            });
+        }
+
+        function updateHighlight(items) {
+            items.forEach((item, idx) => {
+                item.classList.toggle('highlighted', idx === highlightedIndex);
+                if (idx === highlightedIndex) item.scrollIntoView({ block: 'nearest' });
+            });
+        }
+
+        function selectAuthority(name) {
+            authoritySearch.value = name;
+            authorityResults.innerHTML = '';
+            authorityResults.classList.remove('active');
         }
 
         setupToggle('personal-known_by_other_names', 'nameHistoryContainer', 'True');

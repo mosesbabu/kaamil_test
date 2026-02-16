@@ -94,12 +94,20 @@ def register_view(request):
                 if fs.is_valid():
                     fs.save()
             
-            # Update last_section_completed if possible
+            # Update application-level flags
             try:
                 current_section = int(request.POST.get('current_section', 0))
                 application.last_section_completed = max(application.last_section_completed, current_section)
+                
+                # New Household flags
+                if 'application-has_adults_in_home' in request.POST:
+                    application.has_adults_in_home = request.POST.get('application-has_adults_in_home') == 'True'
+                if 'application-has_children_in_home' in request.POST:
+                    application.has_children_in_home = request.POST.get('application-has_children_in_home') == 'True'
+                
                 application.save()
-            except:
+            except Exception as e:
+                print(f"Error saving application flags: {e}")
                 pass
 
             messages.success(request, 'Progress saved successfully. You can complete your application later.')
@@ -124,6 +132,13 @@ def register_view(request):
                 reference_formset.instance = application
             else:
                 application.status = 'SUBMITTED'
+                
+                # New Household flags
+                if 'application-has_adults_in_home' in request.POST:
+                    application.has_adults_in_home = request.POST.get('application-has_adults_in_home') == 'True'
+                if 'application-has_children_in_home' in request.POST:
+                    application.has_children_in_home = request.POST.get('application-has_children_in_home') == 'True'
+                
                 application.save()
             
             # Save everything

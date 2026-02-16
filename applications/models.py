@@ -10,7 +10,9 @@ class Application(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
-    last_section_completed = models.IntegerField(default=0) # To track progress
+    last_section_completed = models.IntegerField(default=0)
+    has_adults_in_home = models.BooleanField(default=False)
+    has_children_in_home = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,6 +70,7 @@ class AddressEntry(models.Model):
     town = models.CharField(max_length=100, null=True, blank=True)
     postcode = models.CharField(max_length=10, null=True, blank=True)
     move_in_date = models.DateField(null=True, blank=True)
+    move_out_date = models.DateField(null=True, blank=True)
     is_current = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -123,9 +126,15 @@ class Training(models.Model):
     eyfs_completed = models.BooleanField(default=False)
     eyfs_date = models.DateField(blank=True, null=True)
     eyfs_org = models.CharField(max_length=255, blank=True, null=True)
+    eyfs_course_title = models.CharField(max_length=255, blank=True, null=True)
+    
+    level2_qual_completed = models.BooleanField(default=False)
+    level2_qual_date = models.DateField(blank=True, null=True)
+    level2_qual_org = models.CharField(max_length=255, blank=True, null=True)
     
     food_hygiene_completed = models.BooleanField(default=False)
     food_hygiene_date = models.DateField(blank=True, null=True)
+    food_hygiene_org = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"Training for {self.application.id}"
