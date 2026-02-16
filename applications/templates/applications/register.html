@@ -1052,6 +1052,7 @@
                     <div id="employmentHistoryContainer">
                         {% for form in employment_formset %}
                         <div class="repeating-block">
+                            {{ form.id }}
                             <div class="repeating-block-header"><span class="repeating-block-title">Employment Entry</span>{% if not forloop.first %}<button type="button" class="remove-btn">Remove</button>{% endif %}</div>
                             <div class="field"><label class="field-label">Employer name <span class="required">*</span></label>{{ form.employer_name }}</div>
                             <div class="field-grid field-grid-2">
@@ -1072,6 +1073,7 @@
                         <div id="referenceContainer">
                             {% for form in reference_formset %}
                             <div class="repeating-block">
+                                {{ form.id }}
                                 <div class="repeating-block-header"><span class="repeating-block-title">Reference</span></div>
                                 <div class="field-grid field-grid-2">
                                     <div class="field"><label class="field-label">First name <span class="required">*</span></label>{{ form.first_name }}</div>
@@ -1130,6 +1132,7 @@
                             <div id="adultsContainer">
                                 {% for form in household_formset %}
                                     <div class="repeating-block household-member-block" data-is-adult="{{ form.is_adult.value|default:'True' }}">
+                                        {{ form.id }}
                                         <div class="repeating-block-header">
                                             <span class="repeating-block-title">Member</span>
                                             {% if not forloop.first %}<button type="button" class="remove-btn">Remove</button>{% endif %}
@@ -1725,7 +1728,13 @@
                 if (!lastForm) return; 
                 const newForm = lastForm.cloneNode(true);
                 newForm.innerHTML = newForm.innerHTML.replace(new RegExp(`${prefix}-\\d+-`, 'g'), `${prefix}-${formNum}-`);
-                newForm.querySelectorAll('input, select, textarea').forEach(i => { if(i.type !== 'hidden') i.value = ''; });
+                newForm.querySelectorAll('input, select, textarea').forEach(i => { 
+                    if (i.name && i.name.endsWith('-id')) {
+                        i.value = '';
+                    } else if (i.type !== 'hidden') {
+                        i.value = '';
+                    }
+                });
                 if (!newForm.querySelector('.remove-btn')) {
                     const header = newForm.querySelector('.repeating-block-header');
                     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'remove-btn'; btn.textContent = 'Remove';
@@ -1808,7 +1817,11 @@
                 const newForm = templateBlock.cloneNode(true);
                 newForm.innerHTML = newForm.innerHTML.replace(/household-\d+-/g, `household-${formNum}-`);
                 newForm.querySelectorAll('input, select, textarea').forEach(i => { 
-                    if(i.type !== 'hidden') i.value = ''; 
+                    if (i.name && i.name.endsWith('-id')) {
+                        i.value = '';
+                    } else if (i.type !== 'hidden') {
+                        i.value = '';
+                    }
                 });
                 
                 // Set is_adult

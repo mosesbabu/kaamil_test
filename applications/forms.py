@@ -40,6 +40,13 @@ class PersonalDetailsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.is_draft = kwargs.pop('is_draft', False)
         super().__init__(*args, **kwargs)
+        
+        # Add descriptive empty labels
+        if 'title' in self.fields:
+            self.fields['title'].choices = [('', 'Select title')] + [c for c in self.fields['title'].choices if c[0]]
+        if 'right_to_work_status' in self.fields:
+            self.fields['right_to_work_status'].choices = [('', 'Select your status')] + [c for c in self.fields['right_to_work_status'].choices if c[0]]
+
         if self.is_draft:
             for field in self.fields.values():
                 field.required = False
