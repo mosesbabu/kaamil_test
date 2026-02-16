@@ -526,8 +526,8 @@
                     <div class="info-box info">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                         <div class="info-box-content">
-                            <h4>Address Gap Check</h4>
-                            <p>We've calculated you have provided <strong id="addressYearsText">0 years</strong> of address history. We need 5 years total.</p>
+                            <h4>Address History Check</h4>
+                            <p>You have provided <strong id="addressCountText">1</strong> address(es), covering <strong id="addressYearsText">0 years</strong> of history. We need 5 years total.</p>
                         </div>
                     </div>
 
@@ -1232,27 +1232,53 @@
         function updateAddressHistory() {
             const dateInputs = document.querySelectorAll('input[name$="-move_in_date"]');
             let earliestDate = null;
+            let count = 0;
+            let futureDateFound = false;
             
             dateInputs.forEach(input => {
                 if (input.value) {
                     const d = new Date(input.value);
-                    if (!isNaN(d.getTime()) && (!earliestDate || d < earliestDate)) earliestDate = d;
+                    if (!isNaN(d.getTime())) {
+                        count++;
+                        if (!earliestDate || d < earliestDate) earliestDate = d;
+                        if (d > new Date()) futureDateFound = true;
+                    }
                 }
             });
             
+            const countEl = document.getElementById('addressCountText');
+            if (countEl) countEl.textContent = count;
+
             const textEl = document.getElementById('addressYearsText');
             if (textEl) {
                 if (earliestDate) {
                     const today = new Date();
                     let years = today.getFullYear() - earliestDate.getFullYear();
-                    const m = today.getMonth() - earliestDate.getMonth();
-                    if (m < 0 || (m === 0 && today.getDate() < earliestDate.getDate())) years--;
+                    let months = today.getMonth() - earliestDate.getMonth();
+                    
+                    if (months < 0 || (months === 0 && today.getDate() < earliestDate.getDate())) {
+                        years--;
+                        months += 12;
+                    }
+                    
                     years = Math.max(0, years);
-                    textEl.textContent = `${years} years`;
-                    if (years < 5) textEl.style.color = 'var(--rk-error)';
-                    else textEl.style.color = 'var(--rk-success)';
+                    
+                    let timeStr = `${years} year${years !== 1 ? 's' : ''}`;
+                    if (years < 5) {
+                        timeStr += ` and ${months} month${months !== 1 ? 's' : ''}`;
+                    }
+
+                    if (futureDateFound) {
+                        timeStr = "Invalid (future date)";
+                        textEl.style.color = 'var(--rk-error)';
+                    } else {
+                        textEl.style.color = (years >= 5) ? 'var(--rk-success)' : 'var(--rk-error)';
+                    }
+                    
+                    textEl.textContent = timeStr;
                 } else {
                     textEl.textContent = '0 years';
+                    textEl.style.color = 'var(--rk-error)';
                 }
             }
         }
@@ -1283,8 +1309,9 @@
 
             if (addBtn) addBtn.addEventListener('click', () => {
                 const formNum = parseInt(totalForms.value);
-                const lastForm = container.querySelector('.repeating-block:last-child');
-                if (!lastForm) return; // Should have at least one template
+                const blocks = container.querySelectorAll('.repeating-block');
+                const lastForm = blocks[blocks.length - 1];
+                if (!lastForm) return; 
                 const newForm = lastForm.cloneNode(true);
                 newForm.innerHTML = newForm.innerHTML.replace(new RegExp(`${prefix}-\\d+-`, 'g'), `${prefix}-${formNum}-`);
                 newForm.querySelectorAll('input, select, textarea').forEach(i => { if(i.type !== 'hidden') i.value = ''; });
