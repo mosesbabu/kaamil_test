@@ -1050,6 +1050,7 @@
         function validateSection(index) {
             const section = sections[index];
             let hasErrors = false;
+            let errorMessages = [];
             
             // Clear previous errors
             section.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
@@ -1093,12 +1094,18 @@
 
             // Check required fields
             const requiredFields = section.querySelectorAll('[required]');
+            let missingFields = [];
             
             requiredFields.forEach(field => {
                 // Check visibility
                 if (field.offsetParent === null) return;
                 
                 let isInvalid = false;
+                let fieldLabel = "";
+                const labelEl = field.closest('.field')?.querySelector('.field-label');
+                if (labelEl) fieldLabel = labelEl.textContent.replace('*', '').trim();
+                else fieldLabel = field.placeholder || field.name;
+
                 if (field.type === 'radio') {
                     const group = section.querySelectorAll(`input[name="${field.name}"]`);
                     const checked = Array.from(group).some(r => r.checked);
@@ -1118,10 +1125,19 @@
                     }
                 }
                 
-                if (isInvalid) hasErrors = true;
+                if (isInvalid) {
+                    hasErrors = true;
+                    if (fieldLabel && !missingFields.includes(fieldLabel)) missingFields.push(fieldLabel);
+                }
             });
 
-            if (hasErrors) return { isValid: false, message: 'Please fill in all required fields.' };
+            if (hasErrors) {
+                let msg = 'Please fill in all required fields';
+                if (missingFields.length > 0) {
+                    msg += ': ' + missingFields.join(', ');
+                }
+                return { isValid: false, message: msg };
+            }
             return { isValid: true };
         }
 
@@ -1500,15 +1516,32 @@
         updateCapacity();
 
         // Show error summary if backend errors exist
-        if (document.querySelector('.field-error')) {
+        if (document.querySelector('.field-error, .errorlist')) {
             const summary = document.querySelector('.error-summary');
             if (summary) {
+                const errorSections = new Set();
+                document.querySelectorAll('.field-error, .errorlist').forEach(err => {
+                    const section = err.closest('.form-section');
+                    if (section) {
+                        const title = section.querySelector('.section-title')?.textContent || `Section ${parseInt(section.id.split('-')[1]) + 1}`;
+                        errorSections.add(title);
+                    }
+                });
+                
+                let listHtml = "";
+                if (errorSections.size > 0) {
+                    listHtml = `<ul style="margin-top: 10px; padding-left: 20px; list-style: disc;">` + 
+                        Array.from(errorSections).map(s => `<li>${s}</li>`).join('') + 
+                        `</ul>`;
+                }
+
                 summary.innerHTML = `
                     <div class="error-summary-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y1="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                         <h3>There is a problem</h3>
                     </div>
-                    <p>Please correct the errors in the form to continue.</p>
+                    <p>Please check the following sections for errors:</p>
+                    ${listHtml}
                 `;
                 summary.classList.add('active');
             }

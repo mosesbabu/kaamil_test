@@ -34,11 +34,31 @@ def register_view(request):
         suitability_form = SuitabilityForm(request.POST, prefix='suitability', instance=application.suitability if application and hasattr(application, 'suitability') else None, is_draft=is_draft)
         declaration_form = DeclarationForm(request.POST, prefix='declaration', instance=application.declaration if application and hasattr(application, 'declaration') else None, is_draft=is_draft)
         
-        # FormSets
-        address_formset = AddressEntryFormSet(request.POST, prefix='address', instance=application)
-        employment_formset = EmploymentEntryFormSet(request.POST, prefix='employment', instance=application)
-        household_formset = HouseholdMemberFormSet(request.POST, prefix='household', instance=application)
-        reference_formset = ReferenceFormSet(request.POST, prefix='reference', instance=application)
+        # FormSets with dynamic extra forms
+        def get_formset(factory, prefix, application):
+            already_exists = False
+            if application:
+                # Check if any related objects exist for this application
+                # This is a bit generic but works if we know the related name or just check the count
+                # Inline formsets have a 'queryset' attribute we can check
+                qs = factory.model.objects.filter(application=application)
+                if qs.exists():
+                    already_exists = True
+            
+            # Create a temporary factory with 0 extra if objects already exist
+            # but preserve weights and fields from the original factory
+            if already_exists:
+                # We can override the extra attribute on the class or just re-create it
+                # A simpler trick: set the extra attribute on the instance after creation
+                fs = factory(request.POST, prefix=prefix, instance=application)
+                fs.extra = 0
+                return fs
+            return factory(request.POST, prefix=prefix, instance=application)
+
+        address_formset = get_formset(AddressEntryFormSet, 'address', application)
+        employment_formset = get_formset(EmploymentEntryFormSet, 'employment', application)
+        household_formset = get_formset(HouseholdMemberFormSet, 'household', application)
+        reference_formset = get_formset(ReferenceFormSet, 'reference', application)
 
         if action == 'save_and_exit':
             # Partial save - don't enforce full validation
@@ -176,10 +196,23 @@ def register_view(request):
         suitability_form = SuitabilityForm(prefix='suitability', instance=application.suitability if application and hasattr(application, 'suitability') else None)
         declaration_form = DeclarationForm(prefix='declaration', instance=application.declaration if application and hasattr(application, 'declaration') else None)
         
-        address_formset = AddressEntryFormSet(prefix='address', instance=application)
-        employment_formset = EmploymentEntryFormSet(prefix='employment', instance=application)
-        household_formset = HouseholdMemberFormSet(prefix='household', instance=application)
-        reference_formset = ReferenceFormSet(prefix='reference', instance=application)
+        # FormSets for GET requests (Resume)
+        def get_formset_get(factory, prefix, application):
+            extra = factory.extra # default from factory
+            if application:
+                qs = factory.model.objects.filter(application=application)
+                if qs.exists():
+                    extra = 0
+            
+            # Create a localized version of the factory or just override extra on the instance
+            fs = factory(prefix=prefix, instance=application)
+            fs.extra = extra
+            return fs
+
+        address_formset = get_formset_get(AddressEntryFormSet, 'address', application)
+        employment_formset = get_formset_get(EmploymentEntryFormSet, 'employment', application)
+        household_formset = get_formset_get(HouseholdMemberFormSet, 'household', application)
+        reference_formset = get_formset_get(ReferenceFormSet, 'reference', application)
 
     context = {
         'application': application,
