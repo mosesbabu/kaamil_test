@@ -835,7 +835,7 @@
                 const email = app.personal ? app.personal.email : 'No email';
                 const progress = app.status === 'SUBMITTED' ? 60 : 20; // Mock progress based on status
                 const days = calculateDays(app.created_at);
-                const registers = app.registers || ['0-5']; // Mock registers if missing
+                const registers = (app.register && app.register.length > 0) ? app.register : ['N/A'];
 
                 return `
                 <tr class="app-row" data-status="${app.status}" data-stage="${stage}" data-name="${name}" onclick="openDetailPanel('${app.id}')">

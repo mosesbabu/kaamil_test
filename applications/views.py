@@ -405,7 +405,16 @@ def dashboard_view(request):
                 'checks': {} # Mock checks for persons
             })
         app_data['household_members'] = members
-        app_data['register'] = ['Early Years', 'Childcare'] # Mock registers
+        # Service Details (Registers)
+        try:
+            sd = app.service_details
+            registers = []
+            if sd.care_age_0_5: registers.append('Early Years')
+            if sd.care_age_5_8: registers.append('Compulsory Childcare')
+            if sd.care_age_8_plus: registers.append('Voluntary Childcare')
+            app_data['register'] = registers
+        except Exception:
+            app_data['register'] = []
         
         # Addresses
         addresses = []
