@@ -71,19 +71,37 @@ def register_view(request):
                 household_formset.instance = application
                 reference_formset.instance = application
             
-            # Save whatever we have
+            # Save whatever we have - but only if there's actual data
             def save_partial(form, app):
-                if form.is_valid():
+                if not form.is_valid():
+                    return
+                
+                # Check if the form has any meaningful data (non-empty, non-default values)
+                has_data = False
+                for field_name, field_value in form.cleaned_data.items():
+                    # Skip the application field itself
+                    if field_name == 'application':
+                        continue
+                    
+                    # Check if value is meaningful (not None, not empty string, not False for non-boolean fields)
+                    if field_value is not None and field_value != '' and field_value != []:
+                        # For boolean fields, we need to check if it's explicitly set
+                        # For other fields, any non-empty value counts
+                        field = form.fields.get(field_name)
+                        if isinstance(field, forms.BooleanField):
+                            # Only count True values as meaningful for boolean fields
+                            if field_value is True:
+                                has_data = True
+                                break
+                        else:
+                            has_data = True
+                            break
+                
+                # Only save if there's actual data
+                if has_data:
                     obj = form.save(commit=False)
                     obj.application = app
                     obj.save()
-                else:
-                    # Even if invalid, we might want to save what's there?
-                    # Django ModelForms don't easily save invalid data.
-                    # But since we made fields null=True in models, 
-                    # we should update forms.py to make them not required if it's a draft.
-                    # For now, we'll try to save if it passes whatever relaxed validation we have.
-                    pass
 
             # Save main forms
             for f in [personal_form, premises_form, service_form, training_form, suitability_form, declaration_form]:
@@ -312,15 +330,28 @@ def dashboard_view(request):
         # Premises
         try:
             pr = app.premises
-            app_data['premises'] = {
-                'local_authority': pr.local_authority,
-                'premises_type': pr.premises_type,
-                'is_own_home': pr.is_own_home,
-                'has_outdoor_space': pr.has_outdoor_space,
-                'has_pets': pr.has_pets,
-                'pets_details': pr.pets_details or '',
-            }
-            app_data['local_authority'] = pr.local_authority # Flatten for table
+            # Check if premises has any meaningful data (not just defaults)
+            has_meaningful_data = (
+                pr.local_authority or 
+                pr.premises_type or 
+                pr.has_outdoor_space or 
+                pr.has_pets or 
+                pr.pets_details
+            )
+            
+            if has_meaningful_data:
+                app_data['premises'] = {
+                    'local_authority': pr.local_authority,
+                    'premises_type': pr.premises_type,
+                    'is_own_home': pr.is_own_home,
+                    'has_outdoor_space': pr.has_outdoor_space,
+                    'has_pets': pr.has_pets,
+                    'pets_details': pr.pets_details or '',
+                }
+                app_data['local_authority'] = pr.local_authority or '-'
+            else:
+                app_data['premises'] = None
+                app_data['local_authority'] = '-'
         except Exception:
             app_data['premises'] = None
             app_data['local_authority'] = '-'
@@ -412,7 +443,9 @@ def dashboard_view(request):
             if sd.care_age_0_5: registers.append('Early Years')
             if sd.care_age_5_8: registers.append('Compulsory Childcare')
             if sd.care_age_8_plus: registers.append('Voluntary Childcare')
-            app_data['register'] = registers
+            
+            # Only include register data if at least one age group is selected
+            app_data['register'] = registers if registers else []
         except Exception:
             app_data['register'] = []
         
