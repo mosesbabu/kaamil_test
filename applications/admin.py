@@ -47,10 +47,10 @@ class ReferenceInline(admin.TabularInline):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'get_applicant_name', 'status', 'created_at', 'updated_at']
+    list_display = ['application_number', 'get_applicant_name', 'status', 'created_at']
     list_filter = ['status', 'created_at']
-    search_fields = ['id', 'personal_details__first_name', 'personal_details__last_name', 'personal_details__email']
-    readonly_fields = ['id', 'created_at', 'updated_at']
+    search_fields = ['application_number', 'personal_details__first_name', 'personal_details__last_name', 'personal_details__email']
+    readonly_fields = ['id', 'application_number', 'created_at', 'updated_at']
     
     inlines = [
         PersonalDetailsInline,
