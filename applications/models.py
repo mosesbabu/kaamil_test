@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator
+from django.utils import timezone
 import uuid
 
 class Application(models.Model):
@@ -9,6 +10,7 @@ class Application(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    application_number = models.CharField(max_length=20, unique=True, blank=True, null=True, editable=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
     last_section_completed = models.IntegerField(default=0)
     has_adults_in_home = models.BooleanField(default=False)
@@ -16,8 +18,34 @@ class Application(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def _generate_application_number(self):
+        """Generate application number in format RK-YEAR-NNNNN (e.g. RK-2024-00001)"""
+        year = timezone.now().year
+        prefix = f'RK-{year}-'
+        # Find the highest sequence number for this year
+        last = (
+            Application.objects
+            .filter(application_number__startswith=prefix)
+            .order_by('application_number')
+            .values_list('application_number', flat=True)
+            .last()
+        )
+        if last:
+            try:
+                seq = int(last.split('-')[-1]) + 1
+            except (ValueError, IndexError):
+                seq = 1
+        else:
+            seq = 1
+        return f'{prefix}{seq:05d}'
+
+    def save(self, *args, **kwargs):
+        if not self.application_number:
+            self.application_number = self._generate_application_number()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Application {self.id} ({self.get_status_display()})"
+        return f"{self.application_number or self.id} ({self.get_status_display()})"
 
 class PersonalDetails(models.Model):
     TITLE_CHOICES = [

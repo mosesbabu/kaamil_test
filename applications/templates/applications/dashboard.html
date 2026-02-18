@@ -797,7 +797,7 @@
                             ${apps.map(app => {
                                 const days = calculateDays(app.created_at);
                                 const name = app.personal ? `${app.personal.first_name} ${app.personal.last_name}` : 'Unknown';
-                                const ref = `APP-${app.id}`;
+                                const ref = app.application_number || `RK-${new Date(app.created_at).getFullYear()}-?????`;
                                 const progress = app.status === 'SUBMITTED' ? 60 : 10; 
                                 
                                 return `
@@ -839,7 +839,7 @@
 
                 return `
                 <tr class="app-row" data-status="${app.status}" data-stage="${stage}" data-name="${name}" onclick="openDetailPanel('${app.id}')">
-                    <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">APP-${app.id}</span></td>
+                    <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">${app.application_number || app.id}</span></td>
                     <td>
                         <div style="font-weight: 600;">${name}</div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">${email}</div>
@@ -898,7 +898,7 @@
 
             const name = app.personal ? `${app.personal.first_name} ${app.personal.last_name}` : 'Incomplete Application';
             document.getElementById('detailName').textContent = name;
-            document.getElementById('detailRef').textContent = `APP-${app.id} · ${app.status_display}`;
+            document.getElementById('detailRef').textContent = `${app.application_number || app.id} · ${app.status_display}`;
             document.getElementById('detailBody').innerHTML = renderDetailContent(app);
             
             // Animate progress ring

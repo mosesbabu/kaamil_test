@@ -299,6 +299,7 @@ def dashboard_view(request):
         
         app_data = {
             'id': str(app.id), # Ensure string for JS
+            'application_number': app.application_number or f'RK-{app.created_at.year}-????',
             'status': app.status,
             'status_display': app.get_status_display(),
             'created_at': app.created_at.strftime('%Y-%m-%d %H:%M') if app.created_at else '',
