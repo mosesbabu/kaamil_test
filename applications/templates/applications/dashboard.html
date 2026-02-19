@@ -514,7 +514,7 @@
                         <p class="main-subtitle">Monitor and manage childminder registrations</p>
                     </div>
                     <div class="header-actions">
-                        <button class="btn btn-secondary">
+                        <button class="btn btn-secondary" onclick="exportApplicationsCSV()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Export
                         </button>
@@ -576,7 +576,7 @@
                 <div class="pipeline-container">
                     <div class="pipeline-header">
                         <div class="pipeline-title">Compliance Check Status</div>
-                        <button class="btn btn-sm btn-outline">Export Matrix</button>
+                        <button class="btn btn-sm btn-outline" onclick="exportComplianceMatrixCSV()">Export Matrix</button>
                     </div>
                     <table class="data-table">
                         <thead>
@@ -1142,6 +1142,88 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeDetailPanel();
         });
+
+        // ==========================================
+        // CSV EXPORT FUNCTIONS
+        // ==========================================
+        function escapeCSV(value) {
+            if (value === null || value === undefined) return '';
+            const str = String(value);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+
+        function exportApplicationsCSV() {
+            const headers = ['Reference', 'First Name', 'Last Name', 'Email', 'Phone', 'Local Authority', 'Registers', 'Status', 'Stage', 'Created', 'Days In Stage'];
+            const rows = applicationsData.map(app => {
+                const name = app.personal || {};
+                const stage = getAppStage(app);
+                const registers = (app.register && app.register.length > 0) ? app.register.join('; ') : '';
+                return [
+                    escapeCSV(app.application_number || app.id),
+                    escapeCSV(name.first_name || ''),
+                    escapeCSV(name.last_name || ''),
+                    escapeCSV(name.email || ''),
+                    escapeCSV(name.phone || ''),
+                    escapeCSV(app.local_authority || ''),
+                    escapeCSV(registers),
+                    escapeCSV(app.status_display || app.status),
+                    escapeCSV(getStageLabel(stage)),
+                    escapeCSV(app.created_at || ''),
+                    escapeCSV(app.daysInStage || 0),
+                ].join(',');
+            });
+
+            const csvContent = [headers.join(','), ...rows].join('\n');
+            const today = new Date().toISOString().slice(0, 10);
+            downloadCSV(csvContent, `applications_export_${today}.csv`);
+        }
+
+        function getCheckLabel(status) {
+            const labels = { 'complete': 'Complete', 'pending': 'Pending', 'blocked': 'Blocked', 'not-started': 'Not Started', 'expired': 'Expired' };
+            return labels[status] || 'Not Started';
+        }
+
+        function exportComplianceMatrixCSV() {
+            const headers = ['Applicant', 'Reference', 'DBS', 'LA Check', 'Ofsted', 'GP Health', 'Reference 1', 'Reference 2', 'First Aid', 'Safeguarding', 'Stage'];
+            const nonDraftApps = applicationsData.filter(a => a.status !== 'DRAFT');
+            const rows = nonDraftApps.map(app => {
+                const name = app.personal ? `${app.personal.first_name} ${app.personal.last_name}` : 'Unknown';
+                const stage = getAppStage(app);
+                const c = app.checks || {};
+                return [
+                    escapeCSV(name),
+                    escapeCSV(app.application_number || app.id),
+                    escapeCSV(getCheckLabel((c.dbs || {}).status)),
+                    escapeCSV(getCheckLabel((c.la_check || {}).status)),
+                    escapeCSV(getCheckLabel((c.ofsted || {}).status)),
+                    escapeCSV(getCheckLabel((c.gp_health || {}).status)),
+                    escapeCSV(getCheckLabel((c.ref_1 || {}).status)),
+                    escapeCSV(getCheckLabel((c.ref_2 || {}).status)),
+                    escapeCSV(getCheckLabel((c.first_aid || {}).status)),
+                    escapeCSV(getCheckLabel((c.safeguarding || {}).status)),
+                    escapeCSV(getStageLabel(stage)),
+                ].join(',');
+            });
+
+            const csvContent = [headers.join(','), ...rows].join('\n');
+            const today = new Date().toISOString().slice(0, 10);
+            downloadCSV(csvContent, `compliance_matrix_${today}.csv`);
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
